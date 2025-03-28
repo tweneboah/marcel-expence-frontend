@@ -5,6 +5,7 @@ import {
   createCategory,
   updateCategory,
   getExpenseCategories,
+  getCategoryById,
 } from "../../api/expenseApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -156,17 +157,19 @@ const CreateCategory = () => {
       const fetchCategoryData = async () => {
         try {
           setFetchLoading(true);
-          const categories = await getExpenseCategories();
-          const category = categories.find((cat) => cat._id === id);
+          const response = await getCategoryById(id);
 
-          if (!category) {
+          // API might return data in a nested 'data' property
+          const categoryData = response.data || response;
+
+          if (!categoryData) {
             setError("Category not found");
             return;
           }
 
           // Prepare budget limits data
           const budgetLimits =
-            category.budgetLimits?.map((limit) => ({
+            categoryData.budgetLimits?.map((limit) => ({
               ...limit,
               startDate: limit.startDate
                 ? new Date(limit.startDate).toISOString().split("T")[0]
@@ -174,9 +177,9 @@ const CreateCategory = () => {
             })) || [];
 
           setFormData({
-            name: category.name || "",
-            description: category.description || "",
-            isActive: category.isActive !== false, // default to true if not specified
+            name: categoryData.name || "",
+            description: categoryData.description || "",
+            isActive: categoryData.isActive !== false, // default to true if not specified
             budgetLimits,
           });
         } catch (err) {

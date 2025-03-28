@@ -23,6 +23,7 @@ import BudgetsList from "../pages/budgets/BudgetsList";
 import BudgetDetails from "../pages/budgets/BudgetDetails";
 import CreateBudget from "../pages/budgets/CreateBudget";
 import EditBudget from "../pages/budgets/EditBudget";
+import BudgetDashboard from "../pages/budgets/BudgetDashboard";
 import YTDReports from "../pages/reports/YTDReports";
 import ChartData from "../pages/reports/ChartData";
 import ExpenseForecasting from "../pages/reports/ExpenseForecasting";
@@ -83,7 +84,8 @@ const AdminRoutes = () => {
 
         {/* Budget routes */}
         <Route path="budgets">
-          <Route index element={<BudgetsList />} />
+          <Route index element={<BudgetDashboard />} />
+          <Route path="list" element={<BudgetsList />} />
           <Route path="create" element={<CreateBudget />} />
           <Route path=":id" element={<BudgetDetails />} />
           <Route path="edit/:id" element={<EditBudget />} />

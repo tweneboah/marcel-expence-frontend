@@ -355,23 +355,14 @@ export const deleteCategory = async (id) => {
 
 /**
  * Fetch a single expense category by ID
- * @param {string} id - The category ID to fetch
+ * @param {string} id - The category ID
  * @returns {Promise<Object>} - The category object
  */
 export const getCategoryById = async (id) => {
   try {
-    console.log("Fetching category with ID:", id);
     const response = await apiConfig.get(`/categories/${id}`);
     console.log("Category details response:", response.data);
-
-    // Extract category data from the response
-    const categoryData = response.data.data || response.data;
-
-    if (!categoryData) {
-      throw new Error("Category not found");
-    }
-
-    return categoryData;
+    return response.data;
   } catch (error) {
     console.error(`Error fetching category with ID ${id}:`, error);
     throw error;

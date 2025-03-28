@@ -13,6 +13,7 @@ import {
   FaExclamationTriangle,
   FaTimes,
   FaCheck,
+  FaChartBar,
 } from "react-icons/fa";
 
 const BudgetsList = () => {
@@ -225,6 +226,16 @@ const BudgetsList = () => {
               </p>
             </motion.div>
             <div className="flex flex-wrap gap-3">
+              <Link to="/admin/budgets">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 bg-white text-[#3d348b] rounded-md flex items-center font-medium shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  <FaChartBar className="mr-2" />
+                  Dashboard
+                </motion.button>
+              </Link>
               <Link to="/admin/budgets/create">
                 <motion.button
                   whileHover={{ scale: 1.05 }}

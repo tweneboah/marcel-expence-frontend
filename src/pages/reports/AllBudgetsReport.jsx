@@ -10,10 +10,14 @@ import {
   FaSearch,
   FaCalendarAlt,
   FaEye,
+  FaSpinner,
+  FaExclamationTriangle,
+  FaChevronUp,
 } from "react-icons/fa";
 import API from "../../api/apiConfig";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const AllBudgetsReport = () => {
   const [budgets, setBudgets] = useState([]);
@@ -21,19 +25,19 @@ const AllBudgetsReport = () => {
   const [error, setError] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
-    year: new Date().getFullYear(),
+    year: null,
     month: 0, // 0 means all months
-    isActive: true,
+    isActive: null,
   });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
-    hasNext: false,
-    hasPrev: false,
+    pages: 1,
   });
-  const [sortField, setSortField] = useState("-year,-month");
+  const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("desc");
+  const [isExporting, setIsExporting] = useState(false);
 
   const monthNames = [
     "All Months",
@@ -53,60 +57,81 @@ const AllBudgetsReport = () => {
 
   useEffect(() => {
     const fetchBudgets = async () => {
-      setIsLoading(true);
-      setError(null);
       try {
-        // Build query params based on filters
-        let queryParams = `sort=${sortField}&page=${pagination.page}&limit=${pagination.limit}`;
+        setIsLoading(true);
+        setError(null);
 
-        if (filters.year) {
-          queryParams += `&year=${filters.year}`;
+        // Build query parameters based on current state
+        let queryParams = "";
+        let paramAdded = false;
+
+        // Add sorting if present
+        if (sortField) {
+          const sortPrefix = sortDirection === "desc" ? "-" : "";
+          queryParams += `${
+            paramAdded ? "&" : "?"
+          }sort=${sortPrefix}${sortField}`;
+          paramAdded = true;
         }
 
-        if (filters.month > 0) {
-          queryParams += `&month=${filters.month}`;
+        // Add pagination
+        if (pagination.page) {
+          queryParams += `${paramAdded ? "&" : "?"}page=${pagination.page}`;
+          paramAdded = true;
+        }
+
+        if (pagination.limit) {
+          queryParams += `${paramAdded ? "&" : "?"}limit=${pagination.limit}`;
+          paramAdded = true;
+        }
+
+        // Add filters
+        if (filters.year) {
+          queryParams += `${paramAdded ? "&" : "?"}year=${filters.year}`;
+          paramAdded = true;
+        }
+
+        if (filters.month && filters.month > 0) {
+          queryParams += `${paramAdded ? "&" : "?"}month=${filters.month}`;
+          paramAdded = true;
         }
 
         if (filters.isActive !== null) {
-          queryParams += `&isActive=${filters.isActive}`;
+          queryParams += `${paramAdded ? "&" : "?"}isActive=${
+            filters.isActive
+          }`;
+          paramAdded = true;
         }
 
         console.log("Fetching budgets with params:", queryParams);
-        const response = await API.get(`/budgets?${queryParams}`);
-        console.log("API Response:", response);
 
-        if (response.data && response.data.data) {
-          // Check if response.data.data is an array, if not, wrap it in an array if it exists
-          const budgetsData = Array.isArray(response.data.data)
-            ? response.data.data
-            : [response.data.data];
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `${API.defaults.baseURL}/budgets${queryParams}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-          console.log(`Processed ${budgetsData.length} budgets:`, budgetsData);
-          setBudgets(budgetsData);
-
-          // Set pagination based on the response
-          setPagination({
-            page: pagination.page,
-            limit: pagination.limit,
-            total: response.data.count || 0,
-            hasNext: response.data.pagination?.next !== undefined,
-            hasPrev: pagination.page > 1,
-          });
-          setError(null);
-        } else {
-          console.error("No data in response:", response);
-          setBudgets([]);
-          setError("No budget data received from server");
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-      } catch (err) {
-        console.error("Error fetching budgets:", err);
-        console.error("Error details:", {
-          message: err.message,
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          data: err.response?.data,
+
+        const data = await response.json();
+
+        console.log("Budgets data:", data);
+
+        setBudgets(data.budgets || []);
+        setPagination({
+          ...pagination,
+          total: data.totalBudgets || 0,
+          pages: data.totalPages || 1,
         });
-        setError(err.response?.data?.message || "Failed to fetch budgets");
+      } catch (error) {
+        console.error("Error fetching budgets:", error);
+        setError("Failed to load budgets. Please try again.");
         setBudgets([]);
       } finally {
         setIsLoading(false);
@@ -114,7 +139,7 @@ const AllBudgetsReport = () => {
     };
 
     fetchBudgets();
-  }, [sortField, pagination.page, pagination.limit, filters]);
+  }, [sortField, sortDirection, pagination.page, pagination.limit, filters]);
 
   const handleSort = (field) => {
     // Convert field to proper sort parameter
@@ -140,71 +165,147 @@ const AllBudgetsReport = () => {
   };
 
   const handlePageChange = (newPage) => {
-    setPagination({ ...pagination, page: newPage });
+    if (newPage >= 1 && newPage <= pagination.pages) {
+      setPagination({ ...pagination, page: newPage });
+    }
   };
 
-  const handleFilterChange = (name, value) => {
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    let parsedValue;
+
+    if (value === "") {
+      parsedValue = null;
+    } else if (name === "isActive") {
+      parsedValue = value === "true";
+    } else if (name === "year" || name === "month") {
+      parsedValue = parseInt(value);
+    } else {
+      parsedValue = value;
+    }
+
     setFilters({
       ...filters,
-      [name]: value,
+      [name]: parsedValue,
     });
     // Reset to first page when changing filters
     setPagination({ ...pagination, page: 1 });
   };
 
-  const handleExport = (format) => {
-    // Simple placeholder for export functionality
-    const fileName = `budget-report-${new Date().toISOString().split("T")[0]}`;
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
 
-    if (format === "csv") {
-      const csvContent = generateCSVContent();
-      downloadCSV(csvContent, `${fileName}.csv`);
-    } else {
-      alert(`Exporting as ${format} is not implemented yet.`);
+      // Build query parameters using current filters
+      let exportParams = "";
+      let paramAdded = false;
+
+      // Add sorting if present
+      if (sortField) {
+        exportParams += `${paramAdded ? "&" : "?"}sort=${
+          sortDirection === "desc" ? "-" : ""
+        }${sortField}`;
+        paramAdded = true;
+      }
+
+      // Add filters
+      if (filters.year) {
+        exportParams += `${paramAdded ? "&" : "?"}year=${filters.year}`;
+        paramAdded = true;
+      }
+
+      if (filters.month && filters.month > 0) {
+        exportParams += `${paramAdded ? "&" : "?"}month=${filters.month}`;
+        paramAdded = true;
+      }
+
+      if (filters.isActive !== null) {
+        exportParams += `${paramAdded ? "&" : "?"}isActive=${filters.isActive}`;
+        paramAdded = true;
+      }
+
+      // Add unlimited limit to get all matching records
+      exportParams += `${paramAdded ? "&" : "?"}limit=1000`;
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${API.defaults.baseURL}/budgets${exportParams}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch budgets for export");
+      }
+
+      const data = await response.json();
+      const allBudgets = data.budgets;
+
+      if (allBudgets.length === 0) {
+        toast.info("No budgets to export");
+        setIsExporting(false);
+        return;
+      }
+
+      const csvContent = generateCSV(allBudgets);
+      downloadCSV(csvContent, "budgets_export.csv");
+      toast.success("Budgets exported successfully");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export budgets");
+    } finally {
+      setIsExporting(false);
     }
   };
 
   // Helper function to generate CSV content
-  const generateCSVContent = () => {
-    // Create CSV header
-    let csvContent =
-      "Period,Category,Budget (CHF),Actual (CHF),Remaining (CHF),Expenses Count,Total Distance,Usage %,Status\n";
+  const generateCSV = (budgets) => {
+    // Define headers
+    const headers = [
+      "Period",
+      "Category",
+      "Budget (CHF)",
+      "Actual Cost (CHF)",
+      "Remaining (CHF)",
+      "Distance (km)",
+      "Expenses Count",
+      "Usage %",
+      "Status",
+    ].join(",");
 
-    // Add rows for each budget
-    budgets.forEach((budget) => {
-      const row = [
-        budget.periodLabel || `${budget.month}/${budget.year}`,
-        budget.category?.name || "N/A",
-        budget.amount?.toFixed(2) || "0.00",
-        budget.usage?.actualCost?.toFixed(2) || "0.00",
-        budget.usage?.remainingAmount?.toFixed(2) ||
-          budget.remainingAmount?.toFixed(2) ||
-          budget.amount?.toFixed(2) ||
-          "0.00",
-        budget.usage?.expenseCount || 0,
-        budget.usage?.actualDistance?.toFixed(2) || "0.00",
-        (budget.usage?.usagePercentage || budget.usagePercentage || 0).toFixed(
-          1
-        ),
-        (budget.status || "UNDER").toUpperCase(),
+    // Generate rows
+    const rows = budgets.map((budget) => {
+      const periodName = `${budget.year}-${
+        budget.month > 9 ? budget.month : "0" + budget.month
+      } (${monthNames[budget.month - 1]})`;
+
+      return [
+        periodName,
+        budget.category?.name || "Unknown",
+        budget.amount.toFixed(2),
+        budget.actualCost?.toFixed(2) || "0.00",
+        budget.remainingAmount?.toFixed(2) || budget.amount.toFixed(2),
+        budget.distance || "0",
+        budget.expensesCount || "0",
+        budget.usagePercentage ? `${budget.usagePercentage.toFixed(2)}%` : "0%",
+        budget.isActive ? "Active" : "Inactive",
       ].join(",");
-
-      csvContent += row + "\n";
     });
 
-    return csvContent;
+    // Combine headers and rows
+    return [headers, ...rows].join("\n");
   };
 
   // Helper function to download CSV
   const downloadCSV = (content, filename) => {
     const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-
+    const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", filename);
-    link.style.visibility = "hidden";
-
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -242,18 +343,25 @@ const AllBudgetsReport = () => {
         </motion.div>
         <div className="flex flex-wrap gap-2">
           <motion.button
+            onClick={() => setFilterOpen(!filterOpen)}
+            className="mb-4 flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setFilterOpen(!filterOpen)}
-            className="flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:shadow-lg transition-all duration-300 shadow-sm"
           >
-            <FaFilter className="mr-2 text-[#3d348b]" />
-            Filters
+            {filterOpen ? (
+              <>
+                <FaChevronUp className="mr-2" /> Hide Filters
+              </>
+            ) : (
+              <>
+                <FaFilter className="mr-2" /> Show Filters
+              </>
+            )}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => handleExport("csv")}
+            onClick={() => handleExport()}
             className="flex items-center px-3 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm"
           >
             <FaFileExport className="mr-2" />
@@ -269,116 +377,101 @@ const AllBudgetsReport = () => {
       )}
 
       {filterOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="bg-white rounded-lg shadow-md p-5 mb-6"
-        >
+        <div className="p-4 bg-white rounded-md shadow-md mb-6">
+          <h3 className="text-lg font-semibold mb-4">Filter Options</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Year
               </label>
-              <div className="relative">
-                <select
-                  value={filters.year}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "year",
-                      e.target.value ? parseInt(e.target.value) : null
-                    )
-                  }
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#7678ed] focus:border-[#7678ed] rounded-md"
-                >
-                  <option value="">All Years</option>
-                  {[...Array(5)].map((_, i) => {
-                    const year = new Date().getFullYear() - i;
-                    return (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    );
-                  })}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <FaCalendarAlt className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
+              <select
+                name="year"
+                value={filters.year || ""}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Years</option>
+                {Array.from(
+                  { length: 5 },
+                  (_, i) => new Date().getFullYear() - 2 + i
+                ).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Month
               </label>
-              <div className="relative">
-                <select
-                  value={filters.month}
-                  onChange={(e) =>
-                    handleFilterChange("month", parseInt(e.target.value))
-                  }
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#7678ed] focus:border-[#7678ed] rounded-md"
-                >
-                  {monthNames.map((month, index) => (
-                    <option key={index} value={index}>
-                      {month}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <FaCalendarAlt className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
+              <select
+                name="month"
+                value={filters.month}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="0">All Months</option>
+                {monthNames.map((month, index) => (
+                  <option key={index} value={index + 1}>
+                    {month}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
               </label>
-              <div className="relative">
-                <select
-                  value={
-                    filters.isActive === null ? "" : filters.isActive.toString()
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleFilterChange(
-                      "isActive",
-                      value === "" ? null : value === "true"
-                    );
-                  }}
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#7678ed] focus:border-[#7678ed] rounded-md"
-                >
-                  <option value="">All Budgets</option>
-                  <option value="true">Active</option>
-                  <option value="false">Inactive</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <FaSearch className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
+              <select
+                name="isActive"
+                value={
+                  filters.isActive === null ? "" : filters.isActive.toString()
+                }
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
             </div>
           </div>
           <div className="flex justify-end mt-4">
             <button
               onClick={() => {
                 setFilters({
-                  year: new Date().getFullYear(),
+                  year: null,
                   month: 0,
-                  isActive: true,
+                  isActive: null,
                 });
                 setPagination({ ...pagination, page: 1 });
+                setSortField("");
+                setSortDirection("desc");
               }}
               className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors mr-2"
             >
-              Reset
+              Reset All Filters
             </button>
-            <button
-              onClick={() => setFilterOpen(false)}
-              className="bg-[#3d348b] text-white px-4 py-2 rounded-md hover:bg-[#7678ed] transition-colors"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleExport()}
+              disabled={isExporting}
+              className="flex items-center px-3 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm disabled:opacity-50"
             >
-              Apply Filters
-            </button>
+              {isExporting ? (
+                <>
+                  <FaSpinner className="animate-spin mr-2" /> Exporting...
+                </>
+              ) : (
+                <>
+                  <FaFileExport className="mr-2" /> Export to CSV
+                </>
+              )}
+            </motion.button>
           </div>
-        </motion.div>
+        </div>
       )}
 
       <motion.div
@@ -468,7 +561,25 @@ const AllBudgetsReport = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {budgets.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-8">
+                    <div className="flex flex-col items-center justify-center">
+                      <FaSpinner className="animate-spin text-3xl text-blue-500 mb-2" />
+                      <p className="text-gray-500">Loading budgets...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-8">
+                    <div className="flex flex-col items-center justify-center">
+                      <FaExclamationTriangle className="text-3xl text-red-500 mb-2" />
+                      <p className="text-red-500">{error}</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : budgets.length === 0 ? (
                 <tr>
                   <td
                     colSpan="10"
