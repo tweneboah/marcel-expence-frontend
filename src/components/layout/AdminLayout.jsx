@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -18,6 +18,10 @@ import {
   FaWallet,
   FaFileInvoiceDollar,
   FaMoneyBillWave,
+  FaSignOutAlt,
+  FaUser,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,11 +29,32 @@ const AdminLayout = ({ children }) => {
   const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState({
     analytics: location.pathname.includes("/admin/analytics"),
     reports: location.pathname.includes("/admin/reports"),
+    budgets: location.pathname.includes("/admin/budgets"),
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if screen is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -83,12 +108,6 @@ const AdminLayout = ({ children }) => {
           label: "Create Budget",
           icon: <FaMoneyBillWave size={14} />,
         },
-
-        // {
-        //   path: "/admin/reports/budget-comparison",
-        //   label: "Budget Comparison",
-        //   icon: <FaChartBar size={14} />,
-        // },
         {
           path: "/admin/reports/all-budgets",
           label: "All Budgets",
@@ -136,57 +155,57 @@ const AdminLayout = ({ children }) => {
         {
           path: "/admin/reports",
           label: "Overview",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/ytd",
           label: "YTD Reports",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/budget-comparison",
           label: "Budget Comparison",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/chart-data",
           label: "Chart Data",
-          icon: <FaChartArea className="mr-1" />,
+          icon: <FaChartArea size={14} />,
         },
         {
           path: "/admin/reports/expense-trends",
           label: "Expense Trends",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/forecast",
           label: "Expense Forecasting",
-          icon: <FaChartLine className="mr-1" />,
+          icon: <FaChartLine size={14} />,
         },
         {
           path: "/admin/reports/yearly-comparison",
           label: "Yearly Comparison",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/filtered-expenses",
           label: "Advanced Filtered Expenses",
-          icon: <FaSearch className="mr-1" />,
+          icon: <FaSearch size={14} />,
         },
         {
           path: "/admin/reports/budget-summary",
           label: "Budget Summary",
-          icon: <FaTable className="mr-1" />,
+          icon: <FaTable size={14} />,
         },
         {
           path: "/admin/reports/all-budgets",
           label: "All Budgets",
-          icon: <FaWallet className="mr-1" />,
+          icon: <FaWallet size={14} />,
         },
         {
           path: "/admin/reports/budget-details",
           label: "Budget Details",
-          icon: <FaFileInvoiceDollar className="mr-1" />,
+          icon: <FaFileInvoiceDollar size={14} />,
         },
       ],
     },
@@ -210,142 +229,325 @@ const AdminLayout = ({ children }) => {
     return location.pathname === path;
   };
 
+  // Animation variants
+  const sidebarVariants = {
+    open: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+    closed: {
+      x: isMobile ? "-100%" : 0,
+      opacity: isMobile ? 0 : 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+  };
+
+  const menuItemVariants = {
+    hover: {
+      scale: 1.02,
+      backgroundColor: "rgba(247, 184, 1, 0.15)",
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
+
+  const subMenuVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.07,
+        delayChildren: 0.2,
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: {
+        staggerChildren: 0.05,
+        staggerDirection: -1,
+        duration: 0.3,
+        ease: "easeIn",
+      },
+    },
+  };
+
+  const subItemVariants = {
+    open: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+      },
+    },
+    closed: {
+      y: -10,
+      opacity: 0,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
+      {/* Overlay for mobile */}
+      <AnimatePresence>
+        {isMobile && isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-20"
+            onClick={toggleSidebar}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <div
-        className={`${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-[#072ac8] to-[#1e96fc] transition duration-300 transform md:translate-x-0 md:static md:inset-auto shadow-lg`}
+      <motion.div
+        variants={sidebarVariants}
+        initial={false}
+        animate={isOpen ? "open" : "closed"}
+        className={`fixed md:relative z-30 h-full w-72 overflow-y-auto shadow-xl`}
       >
-        <div className="flex items-center justify-center h-16 bg-[#072ac8]">
-          <span className="text-white font-semibold text-lg">Admin Panel</span>
-        </div>
+        <div className="h-full flex flex-col bg-gradient-to-br from-[#3d348b] to-[#7678ed]">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between h-16 px-4 bg-[#3d348b]">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="flex items-center space-x-3"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#f7b801] flex items-center justify-center">
+                <FaUser className="text-[#3d348b]" />
+              </div>
+              <span className="text-white font-bold text-lg">Admin Panel</span>
+            </motion.div>
+            {isMobile && (
+              <motion.button
+                whileHover={{
+                  scale: 1.1,
+                  backgroundColor: "#f7b801",
+                  color: "#3d348b",
+                }}
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleSidebar}
+                className="p-1 rounded-md text-white hover:bg-[#f7b801] hover:text-[#3d348b] transition-colors duration-200"
+              >
+                <FaTimes size={20} />
+              </motion.button>
+            )}
+          </div>
 
-        <div className="px-4 py-6">
-          <ul className="space-y-2">
-            {menuItems.map((item, index) => (
-              <li key={item.label || index}>
-                {item.submenu ? (
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => toggleSubmenu(item.label.toLowerCase())}
-                      className={`w-full flex items-center justify-between px-4 py-2 rounded-md transition duration-200 ${
-                        isActiveMenu(item)
-                          ? "bg-white text-[#072ac8]"
-                          : "text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="mr-3">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </div>
-                      <span>
-                        {expandedMenus[item.label.toLowerCase()] ? (
-                          <FaAngleUp size={16} />
-                        ) : (
-                          <FaAngleDown size={16} />
-                        )}
-                      </span>
-                    </button>
-
-                    <AnimatePresence>
-                      {expandedMenus[item.label.toLowerCase()] && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
+          {/* Navigation Menu */}
+          <div className="flex-1 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-[#7678ed] scrollbar-track-transparent">
+            <ul className="px-3 space-y-2">
+              {menuItems.map((item, index) => (
+                <motion.li
+                  key={item.label || index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.5 }}
+                >
+                  {item.submenu ? (
+                    <div className="space-y-1">
+                      <motion.button
+                        whileHover={menuItemVariants.hover}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleSubmenu(item.label.toLowerCase())}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
+                          isActiveMenu(item) ||
+                          expandedMenus[item.label.toLowerCase()]
+                            ? "bg-[#f35b04] bg-opacity-30 text-white"
+                            : "text-white hover:bg-[#f7b801] hover:bg-opacity-15"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <span className="mr-3 text-[#f7b801]">
+                            {item.icon}
+                          </span>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <motion.span
+                          animate={{
+                            rotate: expandedMenus[item.label.toLowerCase()]
+                              ? 180
+                              : 0,
+                          }}
+                          transition={{ duration: 0.3 }}
                         >
-                          <ul className="pl-7 space-y-1">
-                            {item.subItems.map((subItem) => (
-                              <motion.li
-                                key={subItem.path}
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{ duration: 0.2 }}
-                              >
-                                <Link
-                                  to={subItem.path}
-                                  className={`flex items-center px-4 py-2 text-sm rounded-md transition duration-200 ${
-                                    isActiveSubItem(subItem.path)
-                                      ? "bg-white/20 text-white font-medium"
-                                      : "text-white/80 hover:bg-white/10"
-                                  }`}
+                          <FaAngleDown size={16} className="text-[#f7b801]" />
+                        </motion.span>
+                      </motion.button>
+
+                      <AnimatePresence>
+                        {expandedMenus[item.label.toLowerCase()] && (
+                          <motion.div
+                            variants={subMenuVariants}
+                            initial="closed"
+                            animate="open"
+                            exit="closed"
+                            className="overflow-hidden"
+                          >
+                            <ul className="ml-6 space-y-1 pl-3 border-l-2 border-[#f7b801] border-opacity-50">
+                              {item.subItems.map((subItem, idx) => (
+                                <motion.li
+                                  key={subItem.path}
+                                  variants={subItemVariants}
+                                  whileHover={{ x: 3 }}
+                                  transition={{ duration: 0.2 }}
                                 >
-                                  <span className="mr-2">{subItem.icon}</span>
-                                  <span>{subItem.label}</span>
-                                </Link>
-                              </motion.li>
-                            ))}
-                          </ul>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <Link
-                    to={item.path}
-                    className={`flex items-center px-4 py-2 rounded-md transition duration-200 ${
-                      location.pathname === item.path
-                        ? "bg-white text-[#072ac8]"
-                        : "text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <span className="mr-3">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+                                  <Link
+                                    to={subItem.path}
+                                    className={`flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
+                                      isActiveSubItem(subItem.path)
+                                        ? "bg-[#f35b04] bg-opacity-80 text-white font-medium"
+                                        : "text-white text-opacity-80 hover:bg-[#f7b801] hover:bg-opacity-15"
+                                    }`}
+                                  >
+                                    <span className="mr-2 text-[#f7b801]">
+                                      {subItem.icon}
+                                    </span>
+                                    <span>{subItem.label}</span>
+                                  </Link>
+                                </motion.li>
+                              ))}
+                            </ul>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <motion.div
+                      whileHover={menuItemVariants.hover}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Link
+                        to={item.path}
+                        className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
+                          location.pathname === item.path
+                            ? "bg-[#f35b04] bg-opacity-30 text-white"
+                            : "text-white hover:bg-[#f7b801] hover:bg-opacity-15"
+                        }`}
+                      >
+                        <span className="mr-3 text-[#f7b801]">{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    </motion.div>
+                  )}
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Sidebar Footer */}
+          <div className="mt-auto p-4 border-t border-[#7678ed] bg-[#3d348b] bg-opacity-40">
+            <motion.button
+              whileHover={{
+                scale: 1.03,
+                background: "linear-gradient(to right, #f35b04, #f7b801)",
+              }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleLogout}
+              className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#f35b04] text-white transition-all duration-200"
+            >
+              <FaSignOutAlt className="mr-2" />
+              <span>Logout</span>
+            </motion.button>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header */}
-        <header className="flex items-center justify-between p-4 bg-white shadow">
-          <button
-            onClick={toggleSidebar}
-            className="p-1 rounded-md md:hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e96fc]"
-          >
-            <svg
-              className="w-6 h-6 text-[#072ac8]"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
+        <header className="bg-white shadow-md">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              {/* Mobile Menu Toggle */}
+              <motion.button
+                whileHover={{
+                  scale: 1.1,
+                  backgroundColor: "#f7b801",
+                  color: "#3d348b",
+                }}
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg bg-[#3d348b] text-white md:hidden focus:outline-none transition-colors duration-200"
+              >
+                <FaBars size={18} />
+              </motion.button>
 
-          <div className="ml-auto flex items-center space-x-4">
-            <div className="relative">
-              <div className="flex items-center space-x-3">
-                <div className="font-medium text-gray-900">
-                  {user?.name || "Admin"}
+              {/* Page Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xl font-bold text-[#3d348b] hidden md:block"
+              >
+                {menuItems.find(
+                  (item) =>
+                    item.path === location.pathname ||
+                    (item.submenu &&
+                      item.subItems.some(
+                        (subItem) => subItem.path === location.pathname
+                      ))
+                )?.label ||
+                  menuItems
+                    .find(
+                      (item) =>
+                        item.submenu &&
+                        item.subItems.some(
+                          (subItem) => subItem.path === location.pathname
+                        )
+                    )
+                    ?.subItems.find(
+                      (subItem) => subItem.path === location.pathname
+                    )?.label ||
+                  "Dashboard"}
+              </motion.h1>
+
+              {/* User Info */}
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-[#3d348b]">
+                    {user?.name || "Admin User"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {user?.email || "admin@example.com"}
+                  </p>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1 text-sm text-white bg-[#1e96fc] rounded-md hover:bg-[#072ac8] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e96fc]"
-                >
-                  Logout
-                </button>
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#3d348b] to-[#7678ed] flex items-center justify-center text-white">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : <FaUser />}
+                </div>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            {children}
+          </motion.div>
+        </main>
       </div>
     </div>
   );
