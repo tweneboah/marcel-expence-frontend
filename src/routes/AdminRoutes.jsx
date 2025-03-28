@@ -6,7 +6,7 @@ import UserManagement from "../pages/admin/UserManagement";
 import SystemSettings from "../pages/admin/SystemSettings";
 import Reports from "../pages/reports/Reports";
 import Analytics from "../pages/admin/Analytics";
-import PeriodDetail from "../pages/admin/PeriodDetail";
+import PeriodDetail from "../pages/admin/analytics/PeriodDetail";
 import CategoryList from "../pages/categories/CategoryList";
 import CreateCategory from "../pages/categories/CreateCategory";
 import CategoryDetail from "../pages/categories/CategoryDetail";
@@ -14,6 +14,7 @@ import ExpensesList from "../pages/expenses/ExpensesList";
 import ExpenseDetails from "../pages/expenses/ExpenseDetails";
 import CreateExpense from "../pages/expenses/CreateExpense";
 import EditExpense from "../pages/expenses/EditExpense";
+import ExpenseManagement from "../pages/admin/ExpenseManagement";
 import TimeSummary from "../pages/admin/analytics/TimeSummary";
 import CategoryBreakdown from "../pages/admin/analytics/CategoryBreakdown";
 import ExpenseTrends from "../pages/admin/analytics/ExpenseTrends";
@@ -22,7 +23,6 @@ import BudgetsList from "../pages/budgets/BudgetsList";
 import BudgetDetails from "../pages/budgets/BudgetDetails";
 import CreateBudget from "../pages/budgets/CreateBudget";
 import EditBudget from "../pages/budgets/EditBudget";
-import BudgetSummary from "../pages/budgets/BudgetSummary";
 import YTDReports from "../pages/reports/YTDReports";
 import ChartData from "../pages/reports/ChartData";
 import ExpenseForecasting from "../pages/reports/ExpenseForecasting";
@@ -84,7 +84,6 @@ const AdminRoutes = () => {
         {/* Budget routes */}
         <Route path="budgets">
           <Route index element={<BudgetsList />} />
-          <Route path="summary" element={<BudgetSummary />} />
           <Route path="create" element={<CreateBudget />} />
           <Route path=":id" element={<BudgetDetails />} />
           <Route path="edit/:id" element={<EditBudget />} />
@@ -100,7 +99,8 @@ const AdminRoutes = () => {
 
         {/* Expense routes */}
         <Route path="expenses">
-          <Route index element={<ExpensesList />} />
+          <Route index element={<ExpenseManagement />} />
+          <Route path="list" element={<ExpensesList />} />
           <Route path="new" element={<CreateExpense />} />
           <Route path="create" element={<CreateExpense />} />
           <Route path=":id" element={<ExpenseDetails />} />

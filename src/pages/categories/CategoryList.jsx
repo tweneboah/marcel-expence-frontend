@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { getExpenseCategories } from "../../api/expenseApi";
 import Button from "../../components/ui/Button";
 import CategorySummary from "./CategorySummary";
@@ -18,32 +19,87 @@ import {
   FiSliders,
   FiX,
   FiBarChart2,
+  FiEye,
+  FiTag,
+  FiGrid,
+  FiList,
+  FiSettings,
+  FiInfo,
+  FiDollarSign,
+  FiCalendar,
 } from "react-icons/fi";
 
-// Simplified category card with minimal styling
+// Redesigned category card with modern styling and animations
 const CategoryCard = ({ category }) => {
   if (!category) return null;
 
   return (
-    <div
-      style={{ border: "1px solid #ccc", padding: "10px", margin: "10px 0" }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+      whileHover={{ y: -5 }}
     >
-      <h3>{category.name}</h3>
-      {category.description && <p>{category.description}</p>}
-      <div>{category.isActive ? "Active" : "Inactive"}</div>
-      {category.expenseCount !== undefined && (
-        <div>Expenses: {category.expenseCount}</div>
-      )}
-      <div style={{ marginTop: "10px" }}>
+      <div className="px-6 py-5">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="font-bold text-lg text-[#3d348b] truncate">
+            {category.name}
+          </h3>
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded-full ${
+              category.isActive
+                ? "bg-[#7678ed]/10 text-[#7678ed]"
+                : "bg-gray-100 text-gray-500"
+            }`}
+          >
+            {category.isActive ? "Active" : "Inactive"}
+          </span>
+        </div>
+
+        {category.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+            {category.description}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {category.expenseCount !== undefined && (
+            <div className="bg-[#f7b801]/10 p-3 rounded-lg text-center">
+              <p className="text-xs text-gray-500 mb-1">Expenses</p>
+              <p className="font-bold text-[#f7b801]">
+                {category.expenseCount}
+              </p>
+            </div>
+          )}
+
+          {category.budgetAmount !== undefined && (
+            <div className="bg-[#f35b04]/10 p-3 rounded-lg text-center">
+              <p className="text-xs text-gray-500 mb-1">Budget</p>
+              <p className="font-bold text-[#f35b04]">
+                {category.budgetAmount
+                  ? `${category.budgetAmount} CHF`
+                  : "No Budget"}
+              </p>
+            </div>
+          )}
+        </div>
+
         <Link to={`/admin/categories/${category._id}`}>
-          <Button size="sm">View Details</Button>
+          <Button
+            variant="secondary"
+            className="w-full flex justify-center items-center"
+            icon={<FiEye />}
+          >
+            View Details
+          </Button>
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Notification component
+// Notification component with animation
 const Notification = ({ type, message, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,13 +111,16 @@ const Notification = ({ type, message, onClose }) => {
 
   const bgColor =
     type === "success"
-      ? "bg-green-50 border-green-200 text-green-700"
+      ? "bg-green-50 border-green-200 text-[#3d348b]"
       : "bg-red-50 border-red-200 text-red-700";
   const Icon = type === "success" ? FiCheckCircle : FiAlertCircle;
 
   return (
-    <div
-      className={`fixed top-4 right-4 p-4 rounded-lg border ${bgColor} shadow-lg max-w-sm flex items-start`}
+    <motion.div
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      className={`fixed top-4 right-4 p-4 rounded-lg border ${bgColor} shadow-lg max-w-sm flex items-start z-50`}
     >
       <Icon className="mr-2 h-5 w-5 flex-shrink-0 mt-0.5" />
       <div className="flex-1">{message}</div>
@@ -71,11 +130,11 @@ const Notification = ({ type, message, onClose }) => {
       >
         <FiXCircle className="h-5 w-5" />
       </button>
-    </div>
+    </motion.div>
   );
 };
 
-// Filter component
+// Redesigned filter component
 const CategoryFilter = ({
   filters,
   setFilters,
@@ -103,24 +162,32 @@ const CategoryFilter = ({
   ];
 
   return (
-    <div
-      className={`bg-white p-4 rounded-lg shadow mb-6 border border-gray-200 ${className}`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className={`bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-6 ${className}`}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium text-gray-700">Filter Categories</h3>
-        <button
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-lg font-bold text-[#3d348b] flex items-center">
+          <FiFilter className="mr-2 h-5 w-5 text-[#7678ed]" />
+          Filter Categories
+        </h3>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={resetFilters}
-          className="text-sm text-gray-500 flex items-center hover:text-gray-700"
+          className="text-sm text-[#7678ed] flex items-center hover:text-[#3d348b]"
         >
           <FiRefreshCw className="mr-1 h-4 w-4" />
           Reset
-        </button>
+        </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-5">
         {/* Search input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Search
           </label>
           <div className="relative">
@@ -131,15 +198,15 @@ const CategoryFilter = ({
                 setFilters({ ...filters, search: e.target.value })
               }
               placeholder="Category name..."
-              className="pl-9 pr-3 py-2 w-full border border-gray-300 rounded-md focus:ring-[#FCA311] focus:border-[#FCA311]"
+              className="pl-10 pr-3 py-2.5 w-full border border-gray-200 rounded-lg focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
             />
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
           </div>
         </div>
 
         {/* Status filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Status
           </label>
           <select
@@ -151,7 +218,7 @@ const CategoryFilter = ({
                 isActive: value === "" ? undefined : value === "true",
               });
             }}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311]"
+            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
           >
             <option value="">All</option>
             <option value="true">Active</option>
@@ -161,7 +228,7 @@ const CategoryFilter = ({
 
         {/* Period filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Period
           </label>
           <select
@@ -169,7 +236,7 @@ const CategoryFilter = ({
             onChange={(e) =>
               setFilters({ ...filters, period: e.target.value || undefined })
             }
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311]"
+            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
           >
             {periods.map((period) => (
               <option key={period.value} value={period.value}>
@@ -181,7 +248,7 @@ const CategoryFilter = ({
 
         {/* Sort options */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Sort By
           </label>
           <select
@@ -189,7 +256,7 @@ const CategoryFilter = ({
             onChange={(e) =>
               setFilters({ ...filters, sort: e.target.value || undefined })
             }
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311]"
+            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -200,10 +267,10 @@ const CategoryFilter = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-5">
         {/* Has Budget filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Budget
           </label>
           <select
@@ -215,7 +282,7 @@ const CategoryFilter = ({
                 hasBudget: value === "" ? undefined : value === "true",
               });
             }}
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311]"
+            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
           >
             <option value="">All</option>
             <option value="true">Has Budget</option>
@@ -225,7 +292,7 @@ const CategoryFilter = ({
 
         {/* Usage threshold */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Usage Above (%)
           </label>
           <input
@@ -240,12 +307,12 @@ const CategoryFilter = ({
             placeholder="e.g. 80"
             min="0"
             max="100"
-            className="w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311]"
+            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
           />
         </div>
 
-        {/* Include expense counts */}
-        <div className="flex items-end">
+        {/* Additional options (checkboxes) */}
+        <div className="flex flex-col justify-center space-y-2">
           <label className="inline-flex items-center">
             <input
               type="checkbox"
@@ -256,16 +323,13 @@ const CategoryFilter = ({
                   includeExpenseCounts: e.target.checked,
                 })
               }
-              className="rounded border-gray-300 text-[#FCA311] focus:ring-[#FCA311]"
+              className="rounded border-gray-300 text-[#3d348b] focus:ring-[#7678ed]"
             />
             <span className="ml-2 text-sm text-gray-700">
               Show expense counts
             </span>
           </label>
-        </div>
 
-        {/* Compare with previous period */}
-        <div className="flex items-end">
           <label className="inline-flex items-center">
             <input
               type="checkbox"
@@ -276,7 +340,7 @@ const CategoryFilter = ({
                   compareWithPrevious: e.target.checked,
                 })
               }
-              className="rounded border-gray-300 text-[#FCA311] focus:ring-[#FCA311]"
+              className="rounded border-gray-300 text-[#3d348b] focus:ring-[#7678ed]"
             />
             <span className="ml-2 text-sm text-gray-700">
               Compare with previous
@@ -286,18 +350,15 @@ const CategoryFilter = ({
       </div>
 
       <div className="flex justify-end">
-        <Button
-          onClick={applyFilters}
-          className="bg-[#FCA311] hover:bg-[#FCA311]/90"
-        >
-          <FiFilter className="mr-2" /> Apply Filters
+        <Button onClick={applyFilters} variant="accent" icon={<FiFilter />}>
+          Apply Filters
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-// Pagination component
+// Redesigned pagination component
 const Pagination = ({ pagination, onPageChange, page }) => {
   const { totalPages, totalCount } = pagination || {
     totalPages: 1,
@@ -306,7 +367,12 @@ const Pagination = ({ pagination, onPageChange, page }) => {
   const currentPage = Number(page) || 1;
 
   return (
-    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm mt-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.3 }}
+      className="flex items-center justify-between border-t border-gray-200 bg-white px-5 py-4 sm:px-6 rounded-xl shadow-sm mt-6"
+    >
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
@@ -320,16 +386,18 @@ const Pagination = ({ pagination, onPageChange, page }) => {
             className="isolate inline-flex -space-x-px rounded-md shadow-sm"
             aria-label="Pagination"
           >
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage <= 1}
-              className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+              className={`relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-[#3d348b]/5 focus:z-20 focus:outline-offset-0 ${
                 currentPage <= 1 ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
               <span className="sr-only">Previous</span>
               <FiChevronLeft className="h-5 w-5" aria-hidden="true" />
-            </button>
+            </motion.button>
 
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               // Logic to show 5 pages around current page
@@ -345,34 +413,138 @@ const Pagination = ({ pagination, onPageChange, page }) => {
               }
 
               return (
-                <button
+                <motion.button
                   key={pageNum}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => onPageChange(pageNum)}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                     pageNum === currentPage
-                      ? "z-10 bg-[#FCA311] text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCA311]"
-                      : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                      ? "z-10 bg-[#3d348b] text-white focus-visible:outline-[#7678ed]"
+                      : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-[#3d348b]/5 focus:z-20 focus:outline-offset-0"
                   }`}
                 >
                   {pageNum}
-                </button>
+                </motion.button>
               );
             })}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 ${
+              className={`relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-[#3d348b]/5 focus:z-20 focus:outline-offset-0 ${
                 currentPage >= totalPages ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >
               <span className="sr-only">Next</span>
               <FiChevronRight className="h-5 w-5" aria-hidden="true" />
-            </button>
+            </motion.button>
           </nav>
         </div>
       </div>
+    </motion.div>
+  );
+};
+
+// Toggle button for display mode
+const ViewToggle = ({ viewMode, setViewMode }) => {
+  return (
+    <div className="flex bg-gray-100 p-1 rounded-md">
+      <motion.button
+        whileHover={{
+          backgroundColor: viewMode === "grid" ? "" : "rgba(61, 52, 139, 0.05)",
+        }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setViewMode("grid")}
+        className={`flex items-center justify-center px-3 py-1.5 rounded ${
+          viewMode === "grid"
+            ? "bg-white text-[#3d348b] shadow-sm"
+            : "text-gray-500"
+        }`}
+      >
+        <FiGrid className="h-4 w-4" />
+      </motion.button>
+
+      <motion.button
+        whileHover={{
+          backgroundColor: viewMode === "list" ? "" : "rgba(61, 52, 139, 0.05)",
+        }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setViewMode("list")}
+        className={`flex items-center justify-center px-3 py-1.5 rounded ${
+          viewMode === "list"
+            ? "bg-white text-[#3d348b] shadow-sm"
+            : "text-gray-500"
+        }`}
+      >
+        <FiList className="h-4 w-4" />
+      </motion.button>
     </div>
+  );
+};
+
+// List view category item
+const CategoryListItem = ({ category }) => {
+  if (!category) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-300"
+    >
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="bg-[#7678ed]/10 p-2 rounded-full mr-3">
+              <FiTag className="h-5 w-5 text-[#7678ed]" />
+            </div>
+            <div>
+              <h3 className="font-medium text-[#3d348b]">{category.name}</h3>
+              {category.description && (
+                <p className="text-gray-500 text-sm line-clamp-1">
+                  {category.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <span
+              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                category.isActive
+                  ? "bg-[#7678ed]/10 text-[#7678ed]"
+                  : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {category.isActive ? "Active" : "Inactive"}
+            </span>
+
+            {category.expenseCount !== undefined && (
+              <span className="text-sm text-gray-500">
+                <span className="font-medium text-[#f7b801]">
+                  {category.expenseCount}
+                </span>{" "}
+                expenses
+              </span>
+            )}
+
+            <Link to={`/admin/categories/${category._id}`}>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<FiEye className="h-4 w-4" />}
+              >
+                View
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -386,6 +558,7 @@ const CategoryList = () => {
   const [showFilters, setShowFilters] = useState(true);
   const [pagination, setPagination] = useState(null);
   const [showSummary, setShowSummary] = useState(true);
+  const [viewMode, setViewMode] = useState("grid");
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -467,84 +640,127 @@ const CategoryList = () => {
     setAppliedFilters(defaultFilters);
   };
 
+  // Container variants for staggered animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() => setNotification(null)}
-        />
-      )}
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <AnimatePresence>
+        {notification && (
+          <Notification
+            type={notification.type}
+            message={notification.message}
+            onClose={() => setNotification(null)}
+          />
+        )}
+      </AnimatePresence>
 
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#14213D]">
-            Expense Categories
-          </h1>
-          <p className="text-gray-600">
-            Manage your expense categories and budget limits
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => setShowSummary(!showSummary)}
-            variant="secondary"
-            className="flex items-center"
-          >
-            {showSummary ? (
-              <FiX className="mr-2" />
-            ) : (
-              <FiBarChart2 className="mr-2" />
-            )}
-            {showSummary ? "Hide Summary" : "Show Summary"}
-          </Button>
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="secondary"
-            className="flex items-center"
-          >
-            {showFilters ? (
-              <FiX className="mr-2" />
-            ) : (
-              <FiSliders className="mr-2" />
-            )}
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </Button>
-          <Link to="/admin/categories/create">
-            <Button className="bg-[#FCA311] hover:bg-[#FCA311]/90">
-              <FiPlusCircle className="mr-2" /> Create Category
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-6"
+      >
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-[#3d348b] mb-1 flex items-center">
+              <FiTag className="mr-2 h-6 w-6 text-[#7678ed]" />
+              Expense Categories
+            </h1>
+            <p className="text-gray-600">
+              Manage your expense categories and budget limits
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+
+            <Button
+              onClick={() => setShowSummary(!showSummary)}
+              variant="secondary"
+              className="flex items-center"
+              icon={showSummary ? <FiX /> : <FiBarChart2 />}
+            >
+              {showSummary ? "Hide Summary" : "Show Summary"}
             </Button>
-          </Link>
+
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant="secondary"
+              className="flex items-center"
+              icon={showFilters ? <FiX /> : <FiSliders />}
+            >
+              {showFilters ? "Hide Filters" : "Show Filters"}
+            </Button>
+
+            <Link to="/admin/categories/create">
+              <Button
+                variant="primary"
+                className="flex items-center"
+                icon={<FiPlusCircle />}
+              >
+                Create Category
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
-      {showSummary && <CategorySummary />}
+      <AnimatePresence>{showSummary && <CategorySummary />}</AnimatePresence>
 
-      {showFilters && (
-        <CategoryFilter
-          filters={filters}
-          setFilters={setFilters}
-          applyFilters={applyFilters}
-          resetFilters={resetFilters}
-        />
-      )}
+      <AnimatePresence>
+        {showFilters && (
+          <CategoryFilter
+            filters={filters}
+            setFilters={setFilters}
+            applyFilters={applyFilters}
+            resetFilters={resetFilters}
+          />
+        )}
+      </AnimatePresence>
 
       {loading ? (
-        <div className="flex justify-center items-center py-16">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FCA311]"></div>
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center">
-          <FiAlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
-          <p>{error}</p>
-        </div>
-      ) : categories.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="mx-auto bg-[#FCA311]/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mb-4">
-            <FiFilter className="h-12 w-12 text-[#FCA311]" />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex justify-center items-center py-16"
+        >
+          <div className="relative">
+            <div className="h-16 w-16 rounded-full border-t-4 border-b-4 border-[#7678ed] animate-spin"></div>
+            <div
+              className="h-16 w-16 rounded-full border-r-4 border-l-4 border-[#f7b801] animate-spin absolute top-0 left-0"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
           </div>
-          <h2 className="text-xl font-medium text-[#14213D] mb-2">
+        </motion.div>
+      ) : error ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 border border-red-200 text-red-700 p-5 rounded-xl flex items-center shadow-sm"
+        >
+          <FiAlertCircle className="h-5 w-5 mr-3 flex-shrink-0 text-[#f35b04]" />
+          <p>{error}</p>
+        </motion.div>
+      ) : categories.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100"
+        >
+          <div className="mx-auto bg-[#7678ed]/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mb-4">
+            <FiFilter className="h-12 w-12 text-[#7678ed]" />
+          </div>
+          <h2 className="text-xl font-bold text-[#3d348b] mb-2">
             No Categories Found
           </h2>
           <p className="text-gray-600 max-w-md mx-auto mb-6">
@@ -557,23 +773,46 @@ const CategoryList = () => {
           {appliedFilters.search ||
           appliedFilters.isActive !== undefined ||
           appliedFilters.hasBudget !== undefined ? (
-            <Button onClick={resetFilters} variant="secondary" className="mr-2">
-              <FiRefreshCw className="mr-2" /> Reset Filters
+            <Button
+              onClick={resetFilters}
+              variant="secondary"
+              className="mr-2"
+              icon={<FiRefreshCw />}
+            >
+              Reset Filters
             </Button>
           ) : null}
           <Link to="/admin/categories/create">
-            <Button className="bg-[#FCA311] hover:bg-[#FCA311]/90">
-              <FiPlusCircle className="mr-2" /> Create Category
+            <Button variant="primary" icon={<FiPlusCircle />}>
+              Create Category
             </Button>
           </Link>
-        </div>
+        </motion.div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <CategoryCard key={category._id} category={category} />
-            ))}
-          </div>
+          {viewMode === "grid" ? (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {categories.map((category) => (
+                <CategoryCard key={category._id} category={category} />
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col space-y-3"
+            >
+              {categories.map((category) => (
+                <CategoryListItem key={category._id} category={category} />
+              ))}
+            </motion.div>
+          )}
 
           {pagination && pagination.totalPages > 1 && (
             <Pagination

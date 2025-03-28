@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { FaSave, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import API from "../../api/apiConfig";
+import { motion } from "framer-motion";
+import {
+  FaSave,
+  FaTimes,
+  FaExclamationTriangle,
+  FaArrowLeft,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaMapMarkerAlt,
+  FaPercentage,
+  FaStickyNote,
+} from "react-icons/fa";
 
 const EditBudget = () => {
   const { id } = useParams();
@@ -27,58 +38,46 @@ const EditBudget = () => {
     const fetchBudget = async () => {
       try {
         setIsLoading(true);
+        const response = await API.get(`/budgets/${id}`);
 
-        // In production, call the actual API
-        // const response = await axios.get(`/api/v1/budgets/${id}`);
-        // setFormData(response.data.data);
-
-        // Mock data for demo
-        // Simulate API call delay
-        setTimeout(() => {
-          const mockBudget = {
-            _id: id,
-            year: 2023,
-            month: 11,
-            category: "60d5ec9af682fbf6bff9175e", // Just the ID
-            amount: 1200,
-            maxDistance: 800,
-            warningThreshold: 75,
-            criticalThreshold: 90,
-            isActive: true,
-            notes: "Regular budget for November fuel expenses",
-            createdAt: "2023-10-28T08:30:00.000Z",
-            updatedAt: "2023-10-28T08:30:00.000Z",
-          };
-
-          setFormData(mockBudget);
-          setIsLoading(false);
-        }, 800);
+        if (response.data && response.data.success) {
+          const budget = response.data.data;
+          setFormData({
+            year: budget.year,
+            month: budget.month,
+            category: budget.category?._id || "",
+            amount: budget.amount,
+            maxDistance: budget.maxDistance,
+            notes: budget.notes || "",
+            warningThreshold: budget.warningThreshold,
+            criticalThreshold: budget.criticalThreshold,
+            isActive: budget.isActive,
+            isGlobal: budget.isGlobal || false,
+          });
+        } else {
+          setError("Failed to fetch budget details");
+        }
       } catch (err) {
         console.error("Error fetching budget details:", err);
-        setError("Failed to load budget details. Please try again later.");
+        setError(
+          err.response?.data?.message || "Failed to fetch budget details"
+        );
+      } finally {
         setIsLoading(false);
       }
     };
 
     const fetchCategories = async () => {
       try {
-        // In production, call the actual API
-        // const response = await axios.get('/api/v1/categories');
-        // setCategories(response.data.data);
-
-        // Mock data for demo
-        setCategories([
-          { _id: "60d5ec9af682fbf6bff9175e", name: "Fuel", color: "#FF5722" },
-          { _id: "60d5ec9af682fbf6bff9175f", name: "Tolls", color: "#2196F3" },
-          {
-            _id: "60d5ec9af682fbf6bff91760",
-            name: "Maintenance",
-            color: "#4CAF50",
-          },
-        ]);
+        const response = await API.get("/categories?isActive=true");
+        if (response.data && response.data.success) {
+          setCategories(response.data.data || []);
+        } else {
+          setError("Failed to load categories");
+        }
       } catch (err) {
         console.error("Error fetching categories:", err);
-        setError("Failed to load categories. Please try again later.");
+        setError(err.response?.data?.message || "Failed to load categories");
       }
     };
 
@@ -105,21 +104,21 @@ const EditBudget = () => {
     setError(null);
 
     try {
-      // In production, call the actual API
-      // await axios.put(`/api/v1/budgets/${id}`, formData);
+      const response = await API.put(`/budgets/${id}`, formData);
 
-      // Mock success for demo
-      console.log("Budget data updated:", formData);
-      setTimeout(() => {
-        setIsSaving(false);
+      if (response.data && response.data.success) {
         navigate("/admin/budgets");
-      }, 1000);
+      } else {
+        throw new Error(response.data?.message || "Failed to update budget");
+      }
     } catch (err) {
       console.error("Error updating budget:", err);
       setError(
         err.response?.data?.message ||
+          err.message ||
           "Failed to update budget. Please try again."
       );
+    } finally {
       setIsSaving(false);
     }
   };
@@ -163,220 +162,293 @@ const EditBudget = () => {
     ));
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3d348b]"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-6 flex items-center">
-          <FaSave className="mr-2" /> Edit Budget
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-4xl mx-auto px-4 py-6"
+    >
+      <div className="flex items-center mb-6">
+        <Link
+          to="/admin/budgets"
+          className="mr-4 p-2 bg-white rounded-full shadow hover:shadow-md transition-shadow"
+        >
+          <FaArrowLeft className="text-[#3d348b]" />
+        </Link>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+          <FaMoneyBillWave className="mr-2 text-[#7678ed]" />
+          Edit Budget
         </h1>
+      </div>
+
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-xl shadow-lg overflow-hidden"
+      >
+        <div className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] p-5">
+          <h2 className="text-xl font-semibold text-white">Budget Details</h2>
+        </div>
 
         {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
-            <div className="flex items-center">
-              <FaExclamationTriangle className="mr-2" />
-              <p>{error}</p>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 m-5">
+            <div className="flex">
+              <FaExclamationTriangle className="text-red-500 mr-3 mt-0.5" />
+              <p className="text-red-700">{error}</p>
             </div>
           </div>
         )}
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* Period Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Year
-                </label>
-                <select
-                  name="year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  {generateYearOptions()}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Month
-                </label>
-                <select
-                  name="month"
-                  value={formData.month}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  {generateMonthOptions()}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Select "Annual Budget" for a yearly budget instead of monthly
-                </p>
-              </div>
-
-              {/* Category Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Budget Amount (CHF)
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="e.g. 500.00"
-                  min="0"
-                  step="0.01"
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              {/* Max Distance */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Maximum Distance (km)
-                </label>
-                <input
-                  type="number"
-                  name="maxDistance"
-                  value={formData.maxDistance}
-                  onChange={handleChange}
-                  placeholder="e.g. 750"
-                  min="0"
-                  step="0.1"
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Optional: Set a maximum allowed distance for this budget
-                </p>
-              </div>
-
-              {/* Warning Threshold */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Warning Threshold (%)
-                </label>
-                <input
-                  type="number"
-                  name="warningThreshold"
-                  value={formData.warningThreshold}
-                  onChange={handleChange}
-                  min="1"
-                  max="100"
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  When budget usage reaches this percentage, a warning will be
-                  shown
-                </p>
-              </div>
-
-              {/* Critical Threshold */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Critical Threshold (%)
-                </label>
-                <input
-                  type="number"
-                  name="criticalThreshold"
-                  value={formData.criticalThreshold}
-                  onChange={handleChange}
-                  min="1"
-                  max="100"
-                  className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  When budget usage reaches this percentage, a critical alert
-                  will be shown
-                </p>
-              </div>
+        <form onSubmit={handleSubmit} className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Year & Month Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaCalendarAlt className="mr-2 text-[#7678ed]" />
+                Year
+              </label>
+              <select
+                name="year"
+                value={formData.year}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
+              >
+                {generateYearOptions()}
+              </select>
             </div>
 
-            {/* Notes */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaCalendarAlt className="mr-2 text-[#7678ed]" />
+                Month
               </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
+              <select
+                name="month"
+                value={formData.month}
                 onChange={handleChange}
-                placeholder="Additional notes or comments about this budget"
-                rows="3"
-                className="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
+              >
+                {generateMonthOptions()}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select "Annual Budget" for a yearly budget instead of monthly
+              </p>
+            </div>
+
+            {/* Category Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <div className="w-4 h-4 rounded-full bg-[#7678ed] mr-2"></div>
+                Category
+              </label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Amount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaMoneyBillWave className="mr-2 text-[#7678ed]" />
+                Budget Amount (CHF)
+              </label>
+              <input
+                type="number"
+                name="amount"
+                value={formData.amount}
+                onChange={handleChange}
+                placeholder="e.g. 500.00"
+                min="0"
+                step="0.01"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
               />
             </div>
 
-            {/* Active Status */}
-            <div className="mb-6">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  checked={formData.isActive}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm font-medium text-gray-700">
-                  Budget is active
-                </span>
+            {/* Max Distance */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaMapMarkerAlt className="mr-2 text-[#7678ed]" />
+                Maximum Distance (km)
               </label>
+              <input
+                type="number"
+                name="maxDistance"
+                value={formData.maxDistance}
+                onChange={handleChange}
+                placeholder="e.g. 750"
+                min="0"
+                step="0.1"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Optional: Set a maximum allowed distance for this budget
+              </p>
             </div>
 
-            {/* Form Actions */}
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => navigate("/admin/budgets")}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 flex items-center"
-              >
-                <FaTimes className="mr-2" /> Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSaving}
-                className={`px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 flex items-center ${
-                  isSaving ? "opacity-75 cursor-not-allowed" : ""
-                }`}
-              >
-                <FaSave className="mr-2" />
-                {isSaving ? "Saving..." : "Save Changes"}
-              </button>
+            {/* Warning Threshold */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaPercentage className="mr-2 text-[#f7b801]" />
+                Warning Threshold (%)
+              </label>
+              <input
+                type="number"
+                name="warningThreshold"
+                value={formData.warningThreshold}
+                onChange={handleChange}
+                min="1"
+                max="100"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
+              />
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-[#f7b801] h-2 rounded-full"
+                    style={{ width: `${formData.warningThreshold}%` }}
+                  ></div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                When budget usage reaches this percentage, a warning will be
+                shown
+              </p>
             </div>
-          </form>
-        )}
-      </div>
-    </div>
+
+            {/* Critical Threshold */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                <FaPercentage className="mr-2 text-[#f35b04]" />
+                Critical Threshold (%)
+              </label>
+              <input
+                type="number"
+                name="criticalThreshold"
+                value={formData.criticalThreshold}
+                onChange={handleChange}
+                min="1"
+                max="100"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+                required
+              />
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-[#f35b04] h-2 rounded-full"
+                    style={{ width: `${formData.criticalThreshold}%` }}
+                  ></div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                When budget usage reaches this percentage, a critical alert will
+                be shown
+              </p>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+              <FaStickyNote className="mr-2 text-[#7678ed]" />
+              Notes
+            </label>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="Additional notes or comments about this budget"
+              rows="3"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#7678ed] focus:border-[#7678ed]"
+            />
+          </div>
+
+          {/* Active Status */}
+          <div className="mb-6 flex items-center">
+            <input
+              type="checkbox"
+              id="isActive"
+              name="isActive"
+              checked={formData.isActive}
+              onChange={handleChange}
+              className="h-4 w-4 text-[#7678ed] focus:ring-[#7678ed] border-gray-300 rounded"
+            />
+            <label
+              htmlFor="isActive"
+              className="ml-2 text-sm font-medium text-gray-700"
+            >
+              Budget is active
+            </label>
+          </div>
+
+          {/* Global Status */}
+          <div className="mb-6 flex items-center">
+            <input
+              type="checkbox"
+              id="isGlobal"
+              name="isGlobal"
+              checked={formData.isGlobal}
+              onChange={handleChange}
+              className="h-4 w-4 text-[#7678ed] focus:ring-[#7678ed] border-gray-300 rounded"
+            />
+            <label
+              htmlFor="isGlobal"
+              className="ml-2 text-sm font-medium text-gray-700"
+            >
+              Global budget (applies to all users)
+            </label>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex justify-end space-x-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={() => navigate("/admin/budgets")}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 flex items-center shadow-sm"
+            >
+              <FaTimes className="mr-2" /> Cancel
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              disabled={isSaving}
+              className={`px-4 py-2 rounded-md text-white bg-gradient-to-r from-[#3d348b] to-[#7678ed] hover:shadow-lg flex items-center shadow-sm ${
+                isSaving ? "opacity-75 cursor-not-allowed" : ""
+              }`}
+            >
+              <FaSave className="mr-2" />
+              {isSaving ? "Saving..." : "Save Changes"}
+            </motion.button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 };
 

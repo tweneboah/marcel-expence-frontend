@@ -83,25 +83,16 @@ const AdminLayout = ({ children }) => {
           label: "Create Budget",
           icon: <FaMoneyBillWave size={14} />,
         },
-        {
-          path: "/admin/budgets/summary",
-          label: "Budget Summary",
-          icon: <FaTable size={14} />,
-        },
-        {
-          path: "/admin/reports/budget-comparison",
-          label: "Budget Comparison",
-          icon: <FaChartBar size={14} />,
-        },
+
+        // {
+        //   path: "/admin/reports/budget-comparison",
+        //   label: "Budget Comparison",
+        //   icon: <FaChartBar size={14} />,
+        // },
         {
           path: "/admin/reports/all-budgets",
           label: "All Budgets",
           icon: <FaFileAlt size={14} />,
-        },
-        {
-          path: "/admin/reports/budget-details",
-          label: "Budget Details",
-          icon: <FaFileInvoiceDollar size={14} />,
         },
       ],
     },
@@ -114,6 +105,11 @@ const AdminLayout = ({ children }) => {
           path: "/admin/analytics/time-summary",
           label: "Time Summary",
           icon: <FaCalendarAlt size={14} />,
+        },
+        {
+          path: "/admin/analytics/period/month/8/2023",
+          label: "Period Detail",
+          icon: <FaFileAlt size={14} />,
         },
         {
           path: "/admin/analytics/category-breakdown",

@@ -35,6 +35,11 @@ import {
   FiRefreshCw,
   FiMap,
 } from "react-icons/fi";
+import { FaRoute, FaMapMarkedAlt } from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import { formatCurrency } from "../../utils/formatters";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
   const navigate = useNavigate();
@@ -485,7 +490,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         routeSnapshot: result, // Store full route data for later use
       }));
 
-      // If we have a route result with polyline and bounds, save it
+      // If we have a route result with polyline and bounds, save it for the map
       if (result && result.route) {
         setRouteSnapshot({
           origin: originPlace,
@@ -495,27 +500,10 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
           durationValue: result.durationValue,
           durationText: result.durationText,
           route: {
-            overview_polyline: result.route.overview_polyline || null,
-            bounds: result.route.bounds || null,
+            overview_polyline: result.route.overview_polyline,
+            bounds: result.route.bounds,
           },
         });
-
-        // Show the map even if we don't have polyline data
-        setShowMap(true);
-      } else {
-        // Create basic route snapshot without polyline data
-        setRouteSnapshot({
-          origin: originPlace,
-          destination: destinationPlace,
-          waypoints: waypointPlaces,
-          distanceValue: result.distanceValue,
-          durationValue: result.durationValue || 0,
-          durationText: result.durationText || "Unknown duration",
-          route: null,
-        });
-
-        // Show the map anyway
-        setShowMap(true);
       }
 
       setCurrentStep(6); // Move to expense details step
@@ -736,60 +724,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
   };
 
   // Add a toggle map function
-  const toggleMap = async () => {
-    // If we're about to show the map, make sure we have location data
-    if (!showMap) {
-      try {
-        // Fetch place details if we don't have location data
-        if (formData.startPlaceId && (!originPlace || !originPlace.location)) {
-          const placeDetails = await getPlaceDetails(formData.startPlaceId);
-          setOriginPlace(formatPlaceForMap(placeDetails));
-        }
-
-        if (
-          formData.endPlaceId &&
-          (!destinationPlace || !destinationPlace.location)
-        ) {
-          const placeDetails = await getPlaceDetails(formData.endPlaceId);
-          setDestinationPlace(formatPlaceForMap(placeDetails));
-        }
-
-        // Fetch waypoint details if needed
-        if (
-          waypoints.length > 0 &&
-          waypointPlaces.length !== waypoints.length
-        ) {
-          const updatedWaypointPlaces = [...waypointPlaces];
-
-          for (let i = 0; i < waypoints.length; i++) {
-            if (
-              waypoints[i].placeId &&
-              (!waypointPlaces[i] || !waypointPlaces[i]?.location)
-            ) {
-              try {
-                const placeDetails = await getPlaceDetails(
-                  waypoints[i].placeId
-                );
-                updatedWaypointPlaces[i] = formatPlaceForMap(placeDetails);
-              } catch (err) {
-                console.error(
-                  `Error fetching waypoint ${i} place details:`,
-                  err
-                );
-              }
-            }
-          }
-
-          setWaypointPlaces(updatedWaypointPlaces);
-        }
-      } catch (err) {
-        console.error("Error fetching place details for map:", err);
-        setError("Failed to load map data. Please try again.");
-        return; // Don't show map if we couldn't fetch the data
-      }
-    }
-
-    // Toggle map visibility
+  const toggleMap = () => {
     setShowMap(!showMap);
   };
 
@@ -939,38 +874,59 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         {currentStep === 1 && (
           <motion.div
             key="step1"
-            className="space-y-4"
+            className="space-y-6"
             variants={pageVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-[#FCA311]/10 p-2 rounded-full">
-                <FiMapPin className="h-5 w-5 text-[#FCA311]" />
+              <div className="bg-[#7678ed]/10 p-2 rounded-full">
+                <FiMapPin className="h-5 w-5 text-[#7678ed]" />
               </div>
-              <h3 className="text-xl font-medium text-[#14213D]">
-                Where is your journey starting from?
+              <h3 className="text-xl font-medium text-[#3d348b]">
+                Starting Location
               </h3>
             </div>
 
-            <PlaceAutocomplete
-              label="Starting Location"
-              value={formData.startLocation}
-              onChange={(value) =>
-                handleChange({ target: { name: "startLocation", value } })
-              }
-              onPlaceSelect={(place) => handleOriginSelected(place)}
-              required
-              error={formErrors.startLocation}
-            />
+            <p className="text-gray-600 mb-6">
+              Enter the starting point of your journey. You can type an address,
+              location name, or use the autosuggest feature.
+            </p>
+
+            <div className="relative">
+              <label className="block text-sm font-medium text-[#3d348b] mb-2">
+                Starting Point <span className="text-[#f35b04]">*</span>
+              </label>
+              <PlaceAutocomplete
+                onPlaceSelect={handleOriginSelected}
+                initialValue={formData.startLocation}
+                placeholder="Enter starting location"
+                required
+                className={`block w-full px-4 py-3 border-2 ${
+                  formErrors.startLocation
+                    ? "border-red-500"
+                    : "border-gray-300 focus:border-[#7678ed]"
+                } rounded-lg shadow-sm focus:outline-none focus:ring-[#7678ed]/20 focus:ring-2 transition-all duration-200`}
+              />
+              {formErrors.startLocation && (
+                <motion.p
+                  className="mt-2 text-sm text-red-500 flex items-center gap-1"
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <FiAlertTriangle className="h-4 w-4" />
+                  {formErrors.startLocation}
+                </motion.p>
+              )}
+            </div>
 
             <div className="flex justify-end pt-4">
               <Button
                 type="button"
                 onClick={handleNext}
                 disabled={!formData.startLocation}
-                className="bg-[#14213D] hover:bg-[#14213D]/90 focus:ring-[#14213D]/50 gap-2"
+                className="bg-[#3d348b] hover:bg-[#3d348b]/90 focus:ring-[#3d348b]/50 gap-2"
               >
                 Next <FiArrowRight className="h-4 w-4" />
               </Button>
@@ -981,29 +937,36 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         {currentStep === 2 && (
           <motion.div
             key="step2"
-            className="space-y-4"
+            className="space-y-6"
             variants={pageVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-[#FCA311]/10 p-2 rounded-full">
-                <FiCheckCircle className="h-5 w-5 text-[#FCA311]" />
+              <div className="bg-[#f7b801]/10 p-2 rounded-full">
+                <FiCheckCircle className="h-5 w-5 text-[#f7b801]" />
               </div>
-              <h3 className="text-xl font-medium text-[#14213D]">
+              <h3 className="text-xl font-medium text-[#3d348b]">
                 Confirm Starting Location
               </h3>
             </div>
 
-            <div className="bg-[#FCA311]/5 p-5 rounded-lg border border-[#FCA311]/20">
-              <p className="text-sm text-gray-600 mb-2">Selected Location:</p>
-              <div className="flex items-center gap-2">
-                <FiMapPin className="h-5 w-5 text-[#FCA311]" />
-                <p className="font-medium text-[#14213D]">
+            <div className="bg-[#7678ed]/5 p-5 rounded-lg border border-[#7678ed]/20">
+              <p className="text-sm text-gray-600 mb-2">
+                Selected Starting Point:
+              </p>
+              <div className="flex items-center gap-2 mb-4">
+                <FiMapPin className="h-5 w-5 text-[#f35b04]" />
+                <span className="font-medium text-[#3d348b]">
                   {formData.startLocation}
-                </p>
+                </span>
               </div>
+
+              <p className="text-sm text-gray-500">
+                Please confirm this is the correct starting location for your
+                journey.
+              </p>
             </div>
 
             <div className="flex justify-between pt-4">
@@ -1011,16 +974,16 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
                 type="button"
                 variant="secondary"
                 onClick={handlePrevious}
-                className="border-[#14213D]/20 text-[#14213D] gap-2"
+                className="border-[#3d348b]/20 text-[#3d348b] gap-2"
               >
                 <FiArrowLeft className="h-4 w-4" /> Back
               </Button>
               <Button
                 type="button"
                 onClick={handleNext}
-                className="bg-[#14213D] hover:bg-[#14213D]/90 focus:ring-[#14213D]/50 gap-2"
+                className="bg-[#3d348b] hover:bg-[#3d348b]/90 focus:ring-[#3d348b]/50 gap-2"
               >
-                Next <FiArrowRight className="h-4 w-4" />
+                Confirm <FiCheckCircle className="h-4 w-4" />
               </Button>
             </div>
           </motion.div>
@@ -1029,38 +992,59 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         {currentStep === 3 && (
           <motion.div
             key="step3"
-            className="space-y-4"
+            className="space-y-6"
             variants={pageVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-[#FCA311]/10 p-2 rounded-full">
-                <FiMapPin className="h-5 w-5 text-[#FCA311]" />
+              <div className="bg-[#7678ed]/10 p-2 rounded-full">
+                <FiMapPin className="h-5 w-5 text-[#7678ed]" />
               </div>
-              <h3 className="text-xl font-medium text-[#14213D]">
-                Where are you going to?
+              <h3 className="text-xl font-medium text-[#3d348b]">
+                Destination Location
               </h3>
             </div>
 
-            <PlaceAutocomplete
-              label="Destination Location"
-              value={formData.endLocation}
-              onChange={(value) =>
-                handleChange({ target: { name: "endLocation", value } })
-              }
-              onPlaceSelect={(place) => handleDestinationSelected(place)}
-              required
-              error={formErrors.endLocation}
-            />
+            <p className="text-gray-600 mb-6">
+              Enter the destination point of your journey. You can type an
+              address, location name, or use the autosuggest feature.
+            </p>
+
+            <div className="relative">
+              <label className="block text-sm font-medium text-[#3d348b] mb-2">
+                Destination Point <span className="text-[#f35b04]">*</span>
+              </label>
+              <PlaceAutocomplete
+                onPlaceSelect={handleDestinationSelected}
+                initialValue={formData.endLocation}
+                placeholder="Enter destination location"
+                required
+                className={`block w-full px-4 py-3 border-2 ${
+                  formErrors.endLocation
+                    ? "border-red-500"
+                    : "border-gray-300 focus:border-[#7678ed]"
+                } rounded-lg shadow-sm focus:outline-none focus:ring-[#7678ed]/20 focus:ring-2 transition-all duration-200`}
+              />
+              {formErrors.endLocation && (
+                <motion.p
+                  className="mt-2 text-sm text-red-500 flex items-center gap-1"
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <FiAlertTriangle className="h-4 w-4" />
+                  {formErrors.endLocation}
+                </motion.p>
+              )}
+            </div>
 
             <div className="flex justify-between pt-4">
               <Button
                 type="button"
                 variant="secondary"
                 onClick={handlePrevious}
-                className="border-[#14213D]/20 text-[#14213D] gap-2"
+                className="border-[#3d348b]/20 text-[#3d348b] gap-2"
               >
                 <FiArrowLeft className="h-4 w-4" /> Back
               </Button>
@@ -1068,7 +1052,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
                 type="button"
                 onClick={handleNext}
                 disabled={!formData.endLocation}
-                className="bg-[#14213D] hover:bg-[#14213D]/90 focus:ring-[#14213D]/50 gap-2"
+                className="bg-[#3d348b] hover:bg-[#3d348b]/90 focus:ring-[#3d348b]/50 gap-2"
               >
                 Next <FiArrowRight className="h-4 w-4" />
               </Button>
@@ -1512,12 +1496,12 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
 
   // Update steps for stepper based on our current flow
   const steps = [
-    { name: "Start", icon: <FiMapPin /> },
-    { name: "Confirm", icon: <FiCheckCircle /> },
-    { name: "Destination", icon: <FiMapPin /> },
-    { name: "Waypoints", icon: <FiArrowRight /> },
-    { name: "Calculate", icon: <FiTrendingUp /> },
-    { name: "Details", icon: <FiDollarSign /> },
+    { name: "Start", icon: <FiMapPin />, color: "#7678ed" },
+    { name: "Confirm", icon: <FiCheckCircle />, color: "#f7b801" },
+    { name: "Destination", icon: <FiMapPin />, color: "#7678ed" },
+    { name: "Waypoints", icon: <FiArrowRight />, color: "#f7b801" },
+    { name: "Calculate", icon: <FiTrendingUp />, color: "#3d348b" },
+    { name: "Details", icon: <FiDollarSign />, color: "#f35b04" },
   ];
 
   return (

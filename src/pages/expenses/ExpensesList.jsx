@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getExpenses } from "../../api/expenseApi";
+import { getExpenseCategories } from "../../api/expenseApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import ExpenseFilters from "../../components/expenses/ExpenseFilters";
 import { formatDistance } from "../../utils/googleMaps";
 import { useExpenseRoutes } from "../../utils/routeHelpers";
 import { motion } from "framer-motion";
@@ -41,15 +43,83 @@ const ExpensesList = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [categories, setCategories] = useState([]);
+  const [filters, setFilters] = useState({});
+  const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
   const routes = useExpenseRoutes();
 
-  // Fetch expenses on component mount
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getExpenseCategories();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch expenses with filters and pagination
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
         setLoading(true);
-        const data = await getExpenses();
-        setExpenses(data);
+
+        // Prepare query parameters for the API
+        const queryParams = {};
+
+        // Add pagination parameters
+        queryParams.page = currentPage;
+        queryParams.limit = itemsPerPage;
+
+        // Add date range filters
+        if (filters.startDate) {
+          queryParams.startDate = filters.startDate;
+        }
+
+        if (filters.endDate) {
+          queryParams.endDate = filters.endDate;
+        }
+
+        // Add status filter
+        if (filters.filterStatus) {
+          queryParams.status = filters.filterStatus;
+        }
+
+        // Add category filter
+        if (filters.categoryId) {
+          queryParams.category = filters.categoryId;
+        }
+
+        console.log("Fetching expenses with params:", queryParams);
+        const data = await getExpenses(queryParams);
+
+        // Handle the response data
+        if (data.data) {
+          setExpenses(data.data);
+        } else {
+          setExpenses(data);
+        }
+
+        // Set pagination data
+        if (data.pagination) {
+          setPagination(data.pagination);
+        }
+
+        // Set total count
+        if (data.count !== undefined) {
+          setTotalItems(data.count);
+        } else if (Array.isArray(data.data)) {
+          setTotalItems(data.data.length);
+        } else if (Array.isArray(data)) {
+          setTotalItems(data.length);
+        }
       } catch (err) {
         console.error("Failed to fetch expenses:", err);
         setError("Failed to load expenses. Please try again later.");
@@ -59,7 +129,7 @@ const ExpensesList = () => {
     };
 
     fetchExpenses();
-  }, []);
+  }, [filters, currentPage, itemsPerPage]);
 
   // Format date to display in a user-friendly format
   const formatDate = (dateString) => {
@@ -67,27 +137,55 @@ const ExpensesList = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Filter and search expenses
-  const filteredExpenses = expenses
-    .filter((expense) => {
-      if (filterStatus === "all") return true;
-      return expense.status === filterStatus;
-    })
-    .filter((expense) => {
-      if (!searchTerm) return true;
-      const startPoint = expense.startingPoint || expense.startLocation || "";
-      const endPoint = expense.destinationPoint || expense.endLocation || "";
-      const category = expense.category?.name || "";
-      const date = formatDate(expense.journeyDate || expense.expenseDate || "");
+  // Handle filter changes from ExpenseFilters component
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
 
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        startPoint.toLowerCase().includes(searchLower) ||
-        endPoint.toLowerCase().includes(searchLower) ||
-        category.toLowerCase().includes(searchLower) ||
-        date.toLowerCase().includes(searchLower)
-      );
-    });
+  // Handle search term changes
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    // You can implement client-side filtering or send to server
+    // For now, we'll just filter client-side for the search term
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Handle items per page change
+  const handleLimitChange = (newLimit) => {
+    setItemsPerPage(newLimit);
+    setCurrentPage(1); // Reset to first page when limit changes
+  };
+
+  // Filter expenses by search term (client-side filtering)
+  const filteredExpenses = expenses.filter((expense) => {
+    if (!searchTerm) return true;
+    const startPoint = expense.startingPoint || expense.startLocation || "";
+    const endPoint = expense.destinationPoint || expense.endLocation || "";
+    const category = expense.category?.name || "";
+    const date = formatDate(expense.journeyDate || expense.expenseDate || "");
+
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      startPoint.toLowerCase().includes(searchLower) ||
+      endPoint.toLowerCase().includes(searchLower) ||
+      category.toLowerCase().includes(searchLower) ||
+      date.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Calculate pagination information for display
+  const paginationInfo = pagination
+    ? {
+        ...pagination,
+        startItem: (currentPage - 1) * itemsPerPage + 1,
+        endItem: Math.min(currentPage * itemsPerPage, totalItems),
+      }
+    : null;
 
   // Animation variants
   const containerVariants = {
@@ -218,59 +316,129 @@ const ExpensesList = () => {
         </div>
       </motion.div>
 
-      {/* Search and Filter Bar */}
+      {/* Summary Cards Section */}
       <motion.div
         variants={itemVariants}
-        className="mb-6 bg-white rounded-lg shadow-md p-4"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
       >
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-grow relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="h-5 w-5 text-gray-400" />
+        {/* Total Expenses Card */}
+        <motion.div
+          className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#3d348b]"
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium">
+                Total Expenses
+              </p>
+              <p className="text-2xl font-bold text-gray-800">
+                {loading ? (
+                  <span className="text-gray-400">...</span>
+                ) : (
+                  filteredExpenses.length
+                )}
+              </p>
             </div>
-            <input
-              type="text"
-              placeholder="Search expenses..."
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7678ed] focus:border-[#7678ed] transition-colors"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div className="h-12 w-12 rounded-full bg-[#3d348b]/10 flex items-center justify-center text-[#3d348b]">
+              <FiFileText className="h-6 w-6" />
+            </div>
           </div>
+        </motion.div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilterStatus("all")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-colors ${
-                filterStatus === "all"
-                  ? "bg-[#3d348b] text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <FiList className="mr-1.5" /> All
-            </button>
-            <button
-              onClick={() => setFilterStatus("pending")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-colors ${
-                filterStatus === "pending"
-                  ? "bg-[#f7b801] text-[#3d348b]"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <FiAlertCircle className="mr-1.5" /> Pending
-            </button>
-            <button
-              onClick={() => setFilterStatus("approved")}
-              className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center transition-colors ${
-                filterStatus === "approved"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <FiCheckCircle className="mr-1.5" /> Approved
-            </button>
+        {/* Total Amount Card */}
+        <motion.div
+          className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#f35b04]"
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium">Total Amount</p>
+              <p className="text-2xl font-bold text-[#f35b04]">
+                {loading ? (
+                  <span className="text-gray-400">...</span>
+                ) : (
+                  `${filteredExpenses
+                    .reduce((sum, expense) => sum + (expense.totalCost || 0), 0)
+                    .toFixed(2)} CHF`
+                )}
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-[#f35b04]/10 flex items-center justify-center text-[#f35b04]">
+              <FaMoneyBillWave className="h-6 w-6" />
+            </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Total Distance Card */}
+        <motion.div
+          className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#7678ed]"
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium">
+                Total Distance
+              </p>
+              <p className="text-2xl font-bold text-[#7678ed]">
+                {loading ? (
+                  <span className="text-gray-400">...</span>
+                ) : (
+                  `${filteredExpenses
+                    .reduce(
+                      (sum, expense) =>
+                        sum + (expense.distance || expense.distanceInKm || 0),
+                      0
+                    )
+                    .toFixed(0)} km`
+                )}
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-[#7678ed]/10 flex items-center justify-center text-[#7678ed]">
+              <FiTrendingUp className="h-6 w-6" />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Average Per Expense Card */}
+        <motion.div
+          className="bg-white rounded-lg shadow-md p-4 border-l-4 border-[#f7b801]"
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-500 text-sm font-medium">
+                Average Amount
+              </p>
+              <p className="text-2xl font-bold text-[#f7b801]">
+                {loading || filteredExpenses.length === 0 ? (
+                  <span className="text-gray-400">...</span>
+                ) : (
+                  `${(
+                    filteredExpenses.reduce(
+                      (sum, expense) => sum + (expense.totalCost || 0),
+                      0
+                    ) / filteredExpenses.length
+                  ).toFixed(2)} CHF`
+                )}
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-full bg-[#f7b801]/10 flex items-center justify-center text-[#f7b801]">
+              <FiDollarSign className="h-6 w-6" />
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
+
+      {/* Advanced Filters */}
+      <ExpenseFilters
+        onFilter={handleFilterChange}
+        onSearch={handleSearch}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+        pagination={paginationInfo}
+        loading={loading}
+        totalItems={totalItems}
+      />
 
       {loading ? (
         <motion.div
@@ -333,28 +501,28 @@ const ExpensesList = () => {
                 </div>
               </div>
               <h3 className="text-xl font-medium text-[#3d348b] mb-2">
-                {searchTerm || filterStatus !== "all"
+                {searchTerm || Object.keys(filters).length > 0
                   ? "No matching expenses found"
                   : "No expenses yet"}
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {searchTerm || filterStatus !== "all"
+                {searchTerm || Object.keys(filters).length > 0
                   ? "Try adjusting your search or filter criteria to find what you're looking for."
                   : "You haven't created any expenses yet. Start tracking your travel expenses now!"}
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                {(searchTerm || filterStatus !== "all") && (
+                {(searchTerm || Object.keys(filters).length > 0) && (
                   <Button
                     onClick={() => {
                       setSearchTerm("");
-                      setFilterStatus("all");
+                      setFilters({});
                     }}
                     className="bg-[#7678ed] hover:bg-[#7678ed]/90 text-white"
                   >
                     <FiRefreshCw className="mr-2" /> Reset Filters
                   </Button>
                 )}
-                {!searchTerm && filterStatus === "all" && (
+                {!searchTerm && Object.keys(filters).length === 0 && (
                   <Link to={routes.createPath}>
                     <Button className="bg-[#f35b04] hover:bg-[#f35b04]/90 text-white">
                       <FiPlus className="mr-2" /> Create Your First Expense
@@ -492,8 +660,38 @@ const ExpensesList = () => {
                   <FiInfo className="mr-2" /> Summary
                 </h3>
                 <p className="text-white/80">
-                  Total expenses: {filteredExpenses.length}
+                  {paginationInfo
+                    ? `Showing ${paginationInfo.startItem}-${paginationInfo.endItem} of ${totalItems} expenses`
+                    : `Total expenses: ${filteredExpenses.length}`}
                 </p>
+                {Object.keys(filters).length > 0 && (
+                  <div className="mt-2 text-xs text-white/80 max-w-md">
+                    <p className="font-semibold mb-1">Active filters:</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {filters.startDate && (
+                        <li>
+                          From:{" "}
+                          {new Date(filters.startDate).toLocaleDateString()}
+                        </li>
+                      )}
+                      {filters.endDate && (
+                        <li>
+                          To: {new Date(filters.endDate).toLocaleDateString()}
+                        </li>
+                      )}
+                      {filters.filterStatus && (
+                        <li>Status: {filters.filterStatus}</li>
+                      )}
+                      {filters.categoryId && (
+                        <li>
+                          Category:{" "}
+                          {categories.find((c) => c._id === filters.categoryId)
+                            ?.name || "Selected category"}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
               <div className="mt-4 sm:mt-0">
                 <div className="p-3 bg-white/10 rounded-lg">
@@ -507,6 +705,18 @@ const ExpensesList = () => {
                       .toFixed(2)}{" "}
                     CHF
                   </p>
+                  {filteredExpenses.length > 0 && (
+                    <p className="text-xs text-white/80 mt-1">
+                      Avg:{" "}
+                      {(
+                        filteredExpenses.reduce(
+                          (sum, expense) => sum + (expense.totalCost || 0),
+                          0
+                        ) / filteredExpenses.length
+                      ).toFixed(2)}{" "}
+                      CHF
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

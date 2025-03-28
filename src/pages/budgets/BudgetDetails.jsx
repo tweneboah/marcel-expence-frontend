@@ -1,24 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import {
-  Container,
-  Card,
-  Row,
-  Col,
-  Button,
-  Table,
-  ProgressBar,
-  Spinner,
-  Badge,
-  Modal,
-} from "react-bootstrap";
+import API from "../../api/apiConfig";
+import { motion } from "framer-motion";
 import {
   FaArrowLeft,
   FaEdit,
   FaTrash,
   FaChartPie,
   FaExclamationTriangle,
+  FaMoneyBillWave,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaStickyNote,
+  FaPercentage,
+  FaTachometerAlt,
+  FaInfoCircle,
+  FaCheck,
+  FaTimes,
 } from "react-icons/fa";
 
 const BudgetDetails = () => {
@@ -26,407 +24,499 @@ const BudgetDetails = () => {
   const navigate = useNavigate();
   const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
+    const fetchBudgetDetails = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await API.get(`/budgets/${id}`);
+        if (response.data && response.data.success) {
+          setBudget(response.data.data);
+        } else {
+          setError("Failed to fetch budget details");
+        }
+      } catch (err) {
+        console.error("Error fetching budget details:", err);
+        setError(
+          err.response?.data?.message || "Failed to fetch budget details"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchBudgetDetails();
   }, [id]);
 
-  const fetchBudgetDetails = async () => {
-    setLoading(true);
+  const handleDelete = async () => {
+    setDeleting(true);
     setError(null);
 
     try {
-      const response = await axios.get(`/api/v1/budgets/${id}`);
-      setBudget(response.data.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch budget details");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const response = await API.delete(`/budgets/${id}`);
 
-  const handleDelete = async () => {
-    try {
-      await axios.delete(`/api/v1/budgets/${id}`);
-      navigate("/budgets");
+      if (response.data && response.data.success) {
+        navigate("/admin/budgets", {
+          state: {
+            notification: {
+              type: "success",
+              message: "Budget deleted successfully",
+            },
+          },
+        });
+      } else {
+        throw new Error("Failed to delete budget");
+      }
     } catch (err) {
+      console.error("Error deleting budget:", err);
       setError(err.response?.data?.message || "Failed to delete budget");
       setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
     }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("de-CH", {
-      style: "currency",
-      currency: "CHF",
-    }).format(amount);
-  };
-
-  const calculateUsagePercentage = (spent, allocated) => {
-    if (allocated === 0) return 0;
-    return Math.min(Math.round((spent / allocated) * 100), 100);
-  };
-
-  const getProgressVariant = (percentage) => {
-    if (percentage >= 90) return "danger";
-    if (percentage >= 75) return "warning";
-    return "primary";
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
   };
 
   if (loading) {
     return (
-      <Container className="my-4 text-center">
-        <Spinner animation="border" />
-        <p className="mt-2">Loading budget details...</p>
-      </Container>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#3d348b]"></div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Container className="my-4">
-        <div className="alert alert-danger">
-          <FaExclamationTriangle className="me-2" />
-          {error}
+      <div className="px-4 py-6 md:px-6 lg:px-8">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <div className="flex">
+            <FaExclamationTriangle className="text-red-500 mr-3 mt-0.5" />
+            <p className="text-red-700">{error}</p>
+          </div>
         </div>
-        <Link to="/budgets" className="btn btn-primary">
-          <FaArrowLeft className="me-2" /> Back to Budgets
+        <Link
+          to="/admin/budgets"
+          className="inline-flex items-center px-4 py-2 bg-white border border-[#3d348b] text-[#3d348b] rounded-md hover:bg-[#3d348b] hover:text-white transition-colors"
+        >
+          <FaArrowLeft className="mr-2" /> Back to Budgets
         </Link>
-      </Container>
+      </div>
     );
   }
 
   if (!budget) {
     return (
-      <Container className="my-4">
-        <div className="alert alert-warning">
-          <FaExclamationTriangle className="me-2" />
-          Budget not found
+      <div className="px-4 py-6 md:px-6 lg:px-8">
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+          <div className="flex">
+            <FaExclamationTriangle className="text-yellow-500 mr-3 mt-0.5" />
+            <p className="text-yellow-700">Budget not found</p>
+          </div>
         </div>
-        <Link to="/budgets" className="btn btn-primary">
-          <FaArrowLeft className="me-2" /> Back to Budgets
+        <Link
+          to="/admin/budgets"
+          className="inline-flex items-center px-4 py-2 bg-white border border-[#3d348b] text-[#3d348b] rounded-md hover:bg-[#3d348b] hover:text-white transition-colors"
+        >
+          <FaArrowLeft className="mr-2" /> Back to Budgets
         </Link>
-      </Container>
+      </div>
     );
   }
 
-  const totalAllocated = budget.categories.reduce(
-    (sum, cat) => sum + cat.allocatedAmount,
-    0
-  );
-  const totalSpent = budget.categories.reduce(
-    (sum, cat) => sum + cat.spentAmount,
-    0
-  );
-  const overallUsagePercentage = calculateUsagePercentage(
-    totalSpent,
-    totalAllocated
-  );
+  // Status color mapping
+  const getStatusColorClass = (status) => {
+    switch (status) {
+      case "over":
+        return "bg-[#f35b04]";
+      case "warning":
+        return "bg-[#f7b801]";
+      case "under":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
   return (
-    <Container className="my-4">
-      <Card className="mb-4">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <div className="d-flex align-items-center">
-            <Link to="/budgets" className="btn btn-outline-secondary me-3">
-              <FaArrowLeft /> Back to Budgets
-            </Link>
-            <h3 className="mb-0">{budget.name}</h3>
-            <Badge
-              bg={
-                budget.status === "active"
-                  ? "success"
-                  : budget.status === "completed"
-                  ? "secondary"
-                  : "warning"
-              }
-              className="ms-3"
-            >
-              {budget.status.charAt(0).toUpperCase() + budget.status.slice(1)}
-            </Badge>
-          </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="px-4 py-6 md:px-6 lg:px-8"
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex items-center">
+          <Link
+            to="/admin/budgets"
+            className="mr-4 p-2 bg-white rounded-full shadow hover:shadow-md transition-shadow"
+          >
+            <FaArrowLeft className="text-[#3d348b]" />
+          </Link>
           <div>
-            <Button
-              variant="outline-primary"
-              className="me-2"
-              as={Link}
-              to={`/budgets/edit/${id}`}
-            >
-              <FaEdit className="me-1" /> Edit Budget
-            </Button>
-            <Button
-              variant="outline-danger"
-              onClick={() => setShowDeleteModal(true)}
-            >
-              <FaTrash className="me-1" /> Delete
-            </Button>
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+              <FaMoneyBillWave className="mr-2 text-[#7678ed]" />
+              Budget Details
+            </h1>
+            <p className="text-gray-600">
+              {budget.periodLabel || `${budget.month}/${budget.year}`}
+              {budget.category && ` - ${budget.category.name}`}
+            </p>
           </div>
-        </Card.Header>
-        <Card.Body>
-          <Row className="mb-4">
-            <Col md={4}>
-              <Card className="h-100">
-                <Card.Body>
-                  <h5 className="card-title">Budget Details</h5>
-                  <div className="mt-3">
-                    <p>
-                      <strong>Description:</strong>{" "}
-                      {budget.description || "No description provided"}
-                    </p>
-                    <p>
-                      <strong>Period:</strong> {budget.period}
-                    </p>
-                    <p>
-                      <strong>Start Date:</strong>{" "}
-                      {formatDate(budget.startDate)}
-                    </p>
-                    <p>
-                      <strong>End Date:</strong> {formatDate(budget.endDate)}
-                    </p>
-                    <p>
-                      <strong>Created On:</strong>{" "}
-                      {formatDate(budget.createdAt)}
-                    </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to={`/admin/budgets/edit/${budget._id}`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center px-3 py-2 bg-white border border-[#7678ed] text-[#3d348b] rounded-md hover:bg-[#7678ed] hover:text-white transition-all duration-300 shadow-sm"
+            >
+              <FaEdit className="mr-2" />
+              Edit
+            </motion.button>
+          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center px-3 py-2 bg-white border border-red-500 text-red-500 rounded-md hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm"
+          >
+            <FaTrash className="mr-2" />
+            Delete
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Budget Info Card */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] p-4">
+            <h2 className="text-xl font-semibold text-white flex items-center">
+              <FaInfoCircle className="mr-2" />
+              Budget Information
+            </h2>
+          </div>
+          <div className="p-5">
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FaCalendarAlt className="text-[#7678ed]" />
+                <span className="text-sm text-gray-600">Period</span>
+              </div>
+              <p className="text-gray-800 font-medium">
+                {budget.periodLabel || `${budget.month}/${budget.year}`}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    backgroundColor: budget.category?.color || "#7678ed",
+                  }}
+                ></div>
+                <span className="text-sm text-gray-600">Category</span>
+              </div>
+              <p className="text-gray-800 font-medium">
+                {budget.category?.name || "N/A"}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FaMoneyBillWave className="text-[#7678ed]" />
+                <span className="text-sm text-gray-600">Budget Amount</span>
+              </div>
+              <p className="text-gray-800 font-medium">
+                CHF {budget.amount?.toFixed(2) || "0.00"}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FaMapMarkerAlt className="text-[#7678ed]" />
+                <span className="text-sm text-gray-600">Maximum Distance</span>
+              </div>
+              <p className="text-gray-800 font-medium">
+                {budget.maxDistance || 0} km
+              </p>
+            </div>
+
+            <div className="mb-2">
+              <div className="flex items-center gap-2 mb-1">
+                <FaStickyNote className="text-[#7678ed]" />
+                <span className="text-sm text-gray-600">Notes</span>
+              </div>
+              <p className="text-gray-800">
+                {budget.notes || "No notes available"}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Usage Stats Card */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-[#f7b801] to-[#f35b04] p-4">
+            <h2 className="text-xl font-semibold text-white flex items-center">
+              <FaTachometerAlt className="mr-2" />
+              Usage Statistics
+            </h2>
+          </div>
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-lg font-semibold">Status</span>
+              <span
+                className={`px-3 py-1 rounded-full text-white text-sm font-medium ${getStatusColorClass(
+                  budget.status
+                )}`}
+              >
+                {budget.status?.toUpperCase() || "N/A"}
+              </span>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex justify-between mb-1">
+                <span className="text-sm font-medium text-gray-700">Usage</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {budget.usage?.usagePercentage?.toFixed(1) || "0.0"}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className={`h-2.5 rounded-full ${getStatusColorClass(
+                    budget.status
+                  )}`}
+                  style={{ width: `${budget.usage?.usagePercentage || 0}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0%</span>
+                <span
+                  className="text-yellow-600"
+                  style={{ marginLeft: `${budget.warningThreshold - 5}%` }}
+                >
+                  {budget.warningThreshold}%
+                </span>
+                <span
+                  className="text-red-600"
+                  style={{
+                    marginLeft: `${
+                      budget.criticalThreshold - budget.warningThreshold - 5
+                    }%`,
+                  }}
+                >
+                  {budget.criticalThreshold}%
+                </span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm text-gray-500 mb-1">Actual Cost</div>
+                <div className="text-lg font-semibold text-[#f35b04]">
+                  CHF {budget.usage?.actualCost?.toFixed(2) || "0.00"}
+                </div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm text-gray-500 mb-1">Remaining</div>
+                <div className="text-lg font-semibold text-[#3d348b]">
+                  CHF{" "}
+                  {budget.usage?.remainingAmount?.toFixed(2) ||
+                    budget.amount?.toFixed(2) ||
+                    "0.00"}
+                </div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm text-gray-500 mb-1">Distance</div>
+                <div className="text-lg font-semibold text-gray-800">
+                  {budget.usage?.actualDistance?.toFixed(1) || "0.0"} km
+                </div>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="text-sm text-gray-500 mb-1">Expenses</div>
+                <div className="text-lg font-semibold text-gray-800">
+                  {budget.usage?.expenseCount || 0}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Thresholds Card */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="bg-white rounded-xl shadow-lg overflow-hidden"
+        >
+          <div className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] p-4">
+            <h2 className="text-xl font-semibold text-white flex items-center">
+              <FaPercentage className="mr-2" />
+              Thresholds & Settings
+            </h2>
+          </div>
+          <div className="p-5">
+            <div className="mb-5">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Warning Threshold</span>
+                <span className="font-medium text-[#f7b801]">
+                  {budget.warningThreshold}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-[#f7b801] h-2 rounded-full"
+                  style={{ width: `${budget.warningThreshold}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Critical Threshold</span>
+                <span className="font-medium text-[#f35b04]">
+                  {budget.criticalThreshold}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-[#f35b04] h-2 rounded-full"
+                  style={{ width: `${budget.criticalThreshold}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Status</div>
+                  <div className="font-medium">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full mr-2 align-middle"
+                      style={{
+                        backgroundColor: budget.isActive
+                          ? "#10B981"
+                          : "#6B7280",
+                      }}
+                    ></span>
+                    {budget.isActive ? "Active" : "Inactive"}
                   </div>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card className="h-100">
-                <Card.Body className="d-flex flex-column">
-                  <h5 className="card-title">Budget Summary</h5>
-                  <div className="mt-3 flex-grow-1">
-                    <p>
-                      <strong>Total Allocated:</strong>{" "}
-                      {formatCurrency(totalAllocated)}
-                    </p>
-                    <p>
-                      <strong>Total Spent:</strong> {formatCurrency(totalSpent)}
-                    </p>
-                    <p>
-                      <strong>Remaining:</strong>{" "}
-                      {formatCurrency(totalAllocated - totalSpent)}
-                    </p>
-
-                    <div className="mt-4">
-                      <div className="d-flex justify-content-between mb-1">
-                        <div>Overall Budget Usage</div>
-                        <div>{overallUsagePercentage}%</div>
-                      </div>
-                      <ProgressBar
-                        variant={getProgressVariant(overallUsagePercentage)}
-                        now={overallUsagePercentage}
-                        className="mb-3"
-                      />
-                    </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500 mb-1">Scope</div>
+                  <div className="font-medium">
+                    {budget.isGlobal ? "Global" : "Individual"}
                   </div>
-                  <div className="mt-auto text-center">
-                    <Button
-                      variant="outline-primary"
-                      as={Link}
-                      to={`/reports/budget-comparison?budgetId=${id}`}
-                      className="w-100"
-                    >
-                      <FaChartPie className="me-1" /> View Budget Report
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={4}>
-              <Card className="h-100">
-                <Card.Body>
-                  <h5 className="card-title">Status Overview</h5>
-                  <div className="mt-3">
-                    {budget.categories.some(
-                      (cat) =>
-                        calculateUsagePercentage(
-                          cat.spentAmount,
-                          cat.allocatedAmount
-                        ) >= 90
-                    ) && (
-                      <div className="alert alert-danger">
-                        <FaExclamationTriangle className="me-2" />
-                        Some categories have exceeded or are near their budget
-                        limits!
-                      </div>
-                    )}
+                </div>
+              </div>
+            </div>
 
-                    <p>
-                      <strong>Budget Health:</strong>
-                      {overallUsagePercentage >= 90 ? (
-                        <Badge bg="danger" className="ms-2">
-                          Critical
-                        </Badge>
-                      ) : overallUsagePercentage >= 75 ? (
-                        <Badge bg="warning" className="ms-2">
-                          Warning
-                        </Badge>
-                      ) : (
-                        <Badge bg="success" className="ms-2">
-                          Good
-                        </Badge>
-                      )}
-                    </p>
-
-                    <p>
-                      <strong>Days Remaining:</strong>{" "}
-                      {Math.max(
-                        0,
-                        Math.round(
-                          (new Date(budget.endDate) - new Date()) /
-                            (1000 * 60 * 60 * 24)
-                        )
-                      )}{" "}
-                      days
-                    </p>
-
-                    <p>
-                      <strong>Spending Trend:</strong>{" "}
-                      {budget.spendingTrend === "increasing" ? (
-                        <span className="text-danger">Increasing ↗</span>
-                      ) : budget.spendingTrend === "decreasing" ? (
-                        <span className="text-success">Decreasing ↘</span>
-                      ) : (
-                        <span className="text-info">Stable →</span>
-                      )}
-                    </p>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          <Card className="mt-4">
-            <Card.Header>
-              <h5 className="mb-0">Budget Categories</h5>
-            </Card.Header>
-            <Card.Body className="p-0">
-              <Table responsive hover className="mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>Category</th>
-                    <th>Allocated (CHF)</th>
-                    <th>Spent (CHF)</th>
-                    <th>Remaining (CHF)</th>
-                    <th>Usage</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {budget.categories.map((category) => {
-                    const usagePercentage = calculateUsagePercentage(
-                      category.spentAmount,
-                      category.allocatedAmount
-                    );
-                    const isOverBudget =
-                      category.spentAmount > category.allocatedAmount;
-                    const remaining =
-                      category.allocatedAmount - category.spentAmount;
-
-                    return (
-                      <tr key={category._id}>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <span
-                              style={{
-                                width: "12px",
-                                height: "12px",
-                                backgroundColor:
-                                  category.category?.color || "#999",
-                                display: "inline-block",
-                                marginRight: "8px",
-                                borderRadius: "50%",
-                              }}
-                            ></span>
-                            {category.category
-                              ? category.category.name
-                              : category.categoryName || "Uncategorized"}
-                          </div>
-                        </td>
-                        <td>{formatCurrency(category.allocatedAmount)}</td>
-                        <td>{formatCurrency(category.spentAmount)}</td>
-                        <td>
-                          <span
-                            className={
-                              remaining < 0 ? "text-danger" : "text-success"
-                            }
-                          >
-                            {formatCurrency(remaining)}
-                          </span>
-                        </td>
-                        <td style={{ width: "20%" }}>
-                          <div className="d-flex justify-content-between mb-1">
-                            <small>{usagePercentage}%</small>
-                          </div>
-                          <ProgressBar
-                            variant={getProgressVariant(usagePercentage)}
-                            now={usagePercentage}
-                          />
-                        </td>
-                        <td>
-                          <Badge
-                            bg={
-                              isOverBudget
-                                ? "danger"
-                                : usagePercentage >= 75
-                                ? "warning"
-                                : "success"
-                            }
-                          >
-                            {isOverBudget
-                              ? "Over Budget"
-                              : usagePercentage >= 75
-                              ? "Warning"
-                              : "On Track"}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <div className="text-sm text-gray-500 mb-1">Created At</div>
+              <div className="font-medium">
+                {new Date(budget.createdAt).toLocaleDateString()}
+                <span className="text-gray-400 ml-2">
+                  {new Date(budget.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 mt-2 mb-1">
+                Last Updated
+              </div>
+              <div className="font-medium">
+                {new Date(budget.updatedAt).toLocaleDateString()}
+                <span className="text-gray-400 ml-2">
+                  {new Date(budget.updatedAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
-          {budget.notes && (
-            <Card className="mt-4">
-              <Card.Header>
-                <h5 className="mb-0">Notes</h5>
-              </Card.Header>
-              <Card.Body>
-                <p className="mb-0">{budget.notes}</p>
-              </Card.Body>
-            </Card>
-          )}
-        </Card.Body>
-      </Card>
-
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete the budget "{budget.name}"? This
-          action cannot be undone.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={handleDelete}>
-            Delete Budget
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden"
+          >
+            <div className="bg-red-50 p-4 border-b border-red-100">
+              <h3 className="text-lg font-medium text-red-800 flex items-center">
+                <FaExclamationTriangle className="mr-2" />
+                Confirm Deletion
+              </h3>
+            </div>
+            <div className="p-6">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+                  <p className="flex items-center">
+                    <FaExclamationTriangle className="mr-2" />
+                    {error}
+                  </p>
+                </div>
+              )}
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to delete this budget? This action cannot
+                be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center"
+                >
+                  {deleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <FaTrash className="mr-2" />
+                      Delete
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </motion.div>
   );
 };
 

@@ -9,6 +9,10 @@ import {
   FiTrendingUp,
   FiTrendingDown,
   FiRefreshCw,
+  FiTag,
+  FiPackage,
+  FiCheck,
+  FiSettings,
 } from "react-icons/fi";
 import {
   getExpenseCategories,
@@ -24,9 +28,11 @@ const SummaryCard = ({ title, value, icon, change, period, loading }) => {
 
   return (
     <motion.div
-      className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+      className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
       whileHover={{ y: -5 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       <div className="flex justify-between items-start">
         <div>
@@ -34,11 +40,11 @@ const SummaryCard = ({ title, value, icon, change, period, loading }) => {
           {loading ? (
             <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
           ) : (
-            <h3 className="text-2xl font-bold text-[#14213D]">{value}</h3>
+            <h3 className="text-2xl font-bold text-[#3d348b]">{value}</h3>
           )}
         </div>
-        <div className="bg-[#FCA311]/10 p-3 rounded-full">
-          <Icon className="h-6 w-6 text-[#FCA311]" />
+        <div className="bg-[#7678ed]/10 p-3 rounded-full">
+          <Icon className="h-6 w-6 text-[#7678ed]" />
         </div>
       </div>
 
@@ -51,13 +57,13 @@ const SummaryCard = ({ title, value, icon, change, period, loading }) => {
           ) : (
             <>
               {isPositive && (
-                <span className="flex items-center text-green-500 text-sm">
+                <span className="flex items-center text-[#f35b04] text-sm font-medium">
                   <FiTrendingUp className="mr-1" />+
                   {Math.abs(change).toFixed(1)}%
                 </span>
               )}
               {isNegative && (
-                <span className="flex items-center text-red-500 text-sm">
+                <span className="flex items-center text-[#f7b801] text-sm font-medium">
                   <FiTrendingDown className="mr-1" />-
                   {Math.abs(change).toFixed(1)}%
                 </span>
@@ -128,19 +134,19 @@ const CategorySummary = () => {
         // For the top categories, fetch expenses separately for each one
         console.log("💰 Fetching expense data for each category...");
         const topCategories = await enrichCategoriesWithExpenseData(
-          categoriesData.slice(0, 5)
+          categoriesData
         );
         console.log("🔝 Enriched top categories:", topCategories);
 
-        // Calculate total expense amount
+        // Calculate total expense amount (sum of all categories that have expenses)
         const totalAmount = topCategories.reduce(
           (sum, cat) => sum + cat.amount,
           0
         );
         console.log(`💵 Total calculated amount: ${totalAmount} CHF`);
 
-        // Create a fallback summary from the categories data
-        const fallbackSummary = {
+        // Create a summary from the actual categories data
+        const summary = {
           totalCategories: categoriesData.length,
           activeCategories: categoriesData.filter(
             (cat) => cat.isActive !== false
@@ -157,14 +163,22 @@ const CategorySummary = () => {
           topCategories: topCategories,
         };
 
-        console.log("📋 Setting summary data:", fallbackSummary);
-        setSummary(fallbackSummary);
+        console.log("📋 Setting summary data:", summary);
+        setSummary(summary);
       } catch (error) {
         console.error("❌ Error fetching category summary:", error);
-        setError("Unable to load summary data. Using fallback values.");
-
-        // Create mock data when API fails
-        setSummary(createMockSummary());
+        setError(
+          "Unable to load category data. Please try again later or contact support."
+        );
+        // Don't use mock data - set empty summary
+        setSummary({
+          totalCategories: 0,
+          activeCategories: 0,
+          categoriesWithBudget: 0,
+          totalAmount: 0,
+          periodLabel: getPeriodLabel(period),
+          topCategories: [],
+        });
       } finally {
         setLoading(false);
       }
@@ -183,7 +197,6 @@ const CategorySummary = () => {
 
   // Fetch expense data for each category and enrich the category objects
   const enrichCategoriesWithExpenseData = async (categories) => {
-    // First, try the category-by-category approach
     try {
       // Process up to 5 categories to avoid too many API calls
       const topCats = categories.slice(0, 5);
@@ -206,8 +219,26 @@ const CategorySummary = () => {
           // Calculate total amount and count
           let totalAmount = 0;
 
+          // Only process expenses where the category matches the current category
+          const filteredExpenses = expenses.filter((exp) => {
+            const expCategory = exp.category;
+            // Check different possible formats of category in expenses
+            if (typeof expCategory === "string") {
+              return expCategory === category._id;
+            } else if (expCategory && expCategory._id) {
+              return expCategory._id === category._id;
+            } else if (exp.categoryId) {
+              return exp.categoryId === category._id;
+            }
+            return false;
+          });
+
+          console.log(
+            `After filtering, ${category.name} has ${filteredExpenses.length} expenses`
+          );
+
           // Try different properties that might contain the amount
-          for (const expense of expenses) {
+          for (const expense of filteredExpenses) {
             // Check all possible fields that might contain the amount
             let expenseAmount = 0;
 
@@ -234,7 +265,9 @@ const CategorySummary = () => {
             // Log the expense amount and ID for debugging
             if (expenseAmount > 0) {
               console.log(
-                `  - Expense ${expense._id || "unknown"}: ${expenseAmount} CHF`
+                `  - Expense ${
+                  expense._id || "unknown"
+                }: ${expenseAmount} CHF (Category: ${category.name})`
               );
             } else {
               // Attempt to estimate the amount if we have distance data
@@ -246,248 +279,61 @@ const CategorySummary = () => {
                 const costRate = 0.7; // Default cost rate in CHF
                 expenseAmount = distance * costRate;
                 console.log(
-                  `  - Estimated expense based on distance ${distance} km: ${expenseAmount} CHF`
+                  `  - Estimated expense based on distance ${distance} km: ${expenseAmount} CHF (Category: ${category.name})`
                 );
-              } else {
-                console.log(`  - No amount found for expense:`, expense);
               }
             }
 
             totalAmount += expenseAmount;
           }
 
-          console.log(`Total amount for ${category.name}: ${totalAmount} CHF`);
-
-          // Return enriched category
           return {
-            id: category._id,
-            name: category.name,
+            ...category,
             amount: totalAmount,
-            count: expenses.length,
-            percentage: 0, // Will calculate this after we have all data
+            expenseCount: filteredExpenses.length,
           };
         } catch (err) {
           console.error(
-            `Error fetching expenses for category ${category.name}:`,
+            `Error fetching expenses for category ${category._id}:`,
             err
           );
           return {
-            id: category._id,
-            name: category.name,
+            ...category,
             amount: 0,
-            count: 0,
-            percentage: 0,
+            expenseCount: 0,
           };
         }
       });
 
-      // Wait for all promises to resolve
-      let enrichedCategories = await Promise.all(categoryPromises);
+      // Wait for all the category data to be fetched
+      const enrichedCategories = await Promise.all(categoryPromises);
 
-      // Check if we got any expense data
-      const totalAmounts = enrichedCategories.reduce(
-        (sum, cat) => sum + cat.amount,
-        0
-      );
-      const totalCount = enrichedCategories.reduce(
-        (sum, cat) => sum + cat.count,
-        0
+      // Filter out categories with no expenses
+      const categoriesWithExpenses = enrichedCategories.filter(
+        (cat) => cat.expenseCount > 0
       );
 
-      // If we got expense data, use it
-      if (totalAmounts > 0 || totalCount > 0) {
-        // Sort by amount
-        enrichedCategories = enrichedCategories.sort(
-          (a, b) => b.amount - a.amount
-        );
-
-        // Calculate percentages
-        if (totalAmounts > 0) {
-          enrichedCategories = enrichedCategories.map((cat) => ({
-            ...cat,
-            percentage: (cat.amount / totalAmounts) * 100,
-          }));
-        } else if (totalCount > 0) {
-          // Fallback to count-based percentage if no amounts
-          enrichedCategories = enrichedCategories.map((cat) => ({
-            ...cat,
-            percentage: (cat.count / totalCount) * 100,
-          }));
-        }
-
-        console.log(
-          "Category-by-category approach succeeded:",
-          enrichedCategories
-        );
-        return enrichedCategories;
+      // If we have no categories with expenses, just return the original top category
+      if (
+        categoriesWithExpenses.length === 0 &&
+        enrichedCategories.length > 0
+      ) {
+        return [enrichedCategories[0]];
       }
 
-      // If we didn't get any expense data, try the fallback approach
-      console.log(
-        "Category-by-category approach yielded no expense data. Trying fallback..."
-      );
+      // Sort by amount (highest first)
+      return categoriesWithExpenses.sort((a, b) => b.amount - a.amount);
     } catch (error) {
-      console.error("Error in category-by-category approach:", error);
-      console.log("Trying fallback approach...");
-    }
-
-    // FALLBACK APPROACH: Get all expenses and group by category
-    try {
-      console.log("Using fallback approach: fetching all expenses at once");
-
-      // Get all expenses
-      const allExpenses = await getAllExpenses();
-      console.log(`Fallback: Retrieved ${allExpenses.length} total expenses`);
-
-      if (allExpenses.length === 0) {
-        console.log("Fallback: No expenses found");
-        return categories.slice(0, 5).map((cat) => ({
-          id: cat._id,
-          name: cat.name,
-          amount: 0,
-          count: 0,
-          percentage: 20, // Equal distribution for visual purposes
-        }));
-      }
-
-      // Group expenses by category
-      const expensesByCategory = {};
-      for (const expense of allExpenses) {
-        // Find the category ID - it might be in different properties
-        let categoryId = null;
-        if (expense.category && typeof expense.category === "string") {
-          categoryId = expense.category;
-        } else if (expense.category && expense.category._id) {
-          categoryId = expense.category._id;
-        } else if (expense.categoryId) {
-          categoryId = expense.categoryId;
-        }
-
-        if (!categoryId) {
-          console.log("Fallback: Expense has no category:", expense);
-          continue;
-        }
-
-        // Initialize category in the map if not already there
-        if (!expensesByCategory[categoryId]) {
-          expensesByCategory[categoryId] = {
-            expenses: [],
-            totalAmount: 0,
-          };
-        }
-
-        // Add expense to the category and update total
-        expensesByCategory[categoryId].expenses.push(expense);
-
-        // Get expense amount
-        let expenseAmount = 0;
-        if (typeof expense.totalCost === "number") {
-          expenseAmount = expense.totalCost;
-        } else if (typeof expense.amount === "number") {
-          expenseAmount = expense.amount;
-        } else if (typeof expense.total === "number") {
-          expenseAmount = expense.total;
-        } else if (expense.cost && typeof expense.cost.amount === "number") {
-          expenseAmount = expense.cost.amount;
-        } else if (
-          typeof expense.distance === "number" &&
-          typeof expense.costPerKm === "number"
-        ) {
-          expenseAmount = expense.distance * expense.costPerKm;
-        } else if (
-          typeof expense.distance === "number" ||
-          typeof expense.distanceInKm === "number"
-        ) {
-          const distance = expense.distance || expense.distanceInKm || 0;
-          const costRate = 0.7; // Default cost rate in CHF
-          expenseAmount = distance * costRate;
-        }
-
-        expensesByCategory[categoryId].totalAmount += expenseAmount;
-      }
-
-      console.log(
-        "Fallback: Expenses grouped by category:",
-        expensesByCategory
-      );
-
-      // Convert categories map to the expected format
-      const enrichedCategories = categories
-        .map((cat) => {
-          const categoryData = expensesByCategory[cat._id] || {
-            expenses: [],
-            totalAmount: 0,
-          };
-          return {
-            id: cat._id,
-            name: cat.name,
-            amount: categoryData.totalAmount,
-            count: categoryData.expenses.length,
-            percentage: 0, // Will calculate after
-          };
-        })
-        .slice(0, 5); // Keep only top 5
-
-      // Sort by amount
-      enrichedCategories.sort((a, b) => b.amount - a.amount);
-
-      // Calculate total for percentage
-      const totalAmount = enrichedCategories.reduce(
-        (sum, cat) => sum + cat.amount,
-        0
-      );
-      const totalCount = enrichedCategories.reduce(
-        (sum, cat) => sum + cat.count,
-        0
-      );
-
-      // Calculate percentages
-      if (totalAmount > 0) {
-        for (const cat of enrichedCategories) {
-          cat.percentage = (cat.amount / totalAmount) * 100;
-        }
-      } else if (totalCount > 0) {
-        for (const cat of enrichedCategories) {
-          cat.percentage = (cat.count / totalCount) * 100;
-        }
-      }
-
-      console.log("Fallback: Final enriched categories:", enrichedCategories);
-      return enrichedCategories;
-    } catch (error) {
-      console.error("Error in fallback approach:", error);
-
-      // Last resort: Return categories without expense data
-      return categories.slice(0, 5).map((cat) => ({
-        id: cat._id,
-        name: cat.name,
-        amount: 0,
-        count: 0,
-        percentage: 20, // Equal distribution for visual purposes
-      }));
+      console.error("Error enriching categories with expense data:", error);
+      // Return empty array instead of mock data
+      return [];
     }
   };
 
-  // Create completely mock data when API fails entirely
-  const createMockSummary = () => {
-    return {
-      totalCategories: 0,
-      activeCategories: 0,
-      categoriesWithBudget: 0,
-      totalAmount: 0,
-      periodLabel: getPeriodLabel(period),
-      categoryGrowth: null,
-      activeGrowth: null,
-      budgetGrowth: null,
-      amountGrowth: null,
-      topCategories: [],
-    };
-  };
-
-  // Get human-readable period label
+  // Format period label for display
   const getPeriodLabel = (periodValue) => {
-    const periodObj = periods.find((p) => p.value === periodValue);
-    return periodObj ? periodObj.label : "Current Period";
+    const matchingPeriod = periods.find((p) => p.value === periodValue);
+    return matchingPeriod ? matchingPeriod.label : "All Time";
   };
 
   const handlePeriodChange = (e) => {
@@ -495,125 +341,219 @@ const CategorySummary = () => {
   };
 
   const formatCurrency = (amount) => {
-    return `CHF ${amount.toLocaleString("en-CH", {
+    return amount.toLocaleString("de-CH", {
+      style: "currency",
+      currency: "CHF",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })}`;
+    });
   };
 
   const refreshData = () => {
-    setLoading(true);
-    setSummary(null);
-    setError(null);
-    setPeriod(period);
+    console.log("🔄 Refreshing category summary data...");
+    setPeriod(period); // This will trigger the useEffect
   };
 
+  // Animation variants for staggered card animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  // Empty state component
+  const EmptyState = ({ message }) => (
+    <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-100">
+      <div className="mx-auto bg-[#7678ed]/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mb-4">
+        <FiTag className="h-12 w-12 text-[#7678ed]" />
+      </div>
+      <p className="text-gray-500">{message}</p>
+    </div>
+  );
+
   return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-[#14213D]">Category Summary</h2>
-          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-        </div>
-        <div className="flex items-center space-x-2">
-          <select
-            value={period}
-            onChange={handlePeriodChange}
-            className="border border-gray-300 rounded-md py-2 px-3 focus:ring-[#FCA311] focus:border-[#FCA311] text-sm"
-          >
-            {periods.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <Button
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-6"
+    >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h2 className="text-xl font-bold text-[#3d348b] flex items-center">
+          <FiBarChart2 className="mr-2 h-5 w-5 text-[#7678ed]" />
+          Category Summary
+        </h2>
+
+        <div className="flex items-center space-x-3 mt-3 md:mt-0">
+          <div className="relative">
+            <select
+              value={period}
+              onChange={handlePeriodChange}
+              className="pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-[#7678ed] focus:border-[#7678ed] bg-white shadow-sm appearance-none"
+            >
+              {periods.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <FiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#7678ed]" />
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={refreshData}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+            className="p-2 rounded-lg text-[#7678ed] hover:bg-[#7678ed]/10 transition-colors duration-200"
+            disabled={loading}
           >
-            <FiRefreshCw className="h-4 w-4" />
-          </Button>
+            <FiRefreshCw
+              className={`h-5 w-5 ${loading ? "animate-spin" : ""}`}
+            />
+          </motion.button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {error && (
+        <div className="bg-[#f35b04]/10 text-[#f35b04] p-4 rounded-lg mb-6 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Main metrics */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      >
         <SummaryCard
           title="Total Categories"
           value={summary?.totalCategories || 0}
-          icon={FiPieChart}
+          icon={FiTag}
           change={summary?.categoryGrowth}
+          period={summary?.periodLabel}
           loading={loading}
         />
 
         <SummaryCard
           title="Active Categories"
           value={summary?.activeCategories || 0}
-          icon={FiActivity}
+          icon={FiCheck}
           change={summary?.activeGrowth}
-          loading={loading}
-        />
-
-        <SummaryCard
-          title="Total Expenses"
-          value={formatCurrency(summary?.totalAmount || 0)}
-          icon={FiDollarSign}
-          change={summary?.amountGrowth}
           period={summary?.periodLabel}
           loading={loading}
         />
 
         <SummaryCard
-          title="Categories with Budget"
+          title="With Budget"
           value={summary?.categoriesWithBudget || 0}
-          icon={FiBarChart2}
+          icon={FiSettings}
           change={summary?.budgetGrowth}
+          period={summary?.periodLabel}
           loading={loading}
         />
+
+        <SummaryCard
+          title="Total Expenses"
+          value={
+            summary?.totalAmount
+              ? formatCurrency(summary.totalAmount)
+              : "CHF 0.00"
+          }
+          icon={FiDollarSign}
+          change={summary?.amountGrowth}
+          period={summary?.periodLabel}
+          loading={loading}
+        />
+      </motion.div>
+
+      {/* Categories section */}
+      <div className="mb-2">
+        <h3 className="text-md font-bold text-[#3d348b] flex items-start">
+          <FiPieChart className="mr-2 h-5 w-5 text-[#7678ed]" />
+          {summary?.topCategories?.length > 1
+            ? "Top Categories by Expense Amount"
+            : "Expense Category"}
+        </h3>
       </div>
 
-      {summary?.topCategories && summary.topCategories.length > 0 && (
-        <div className="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-          <h3 className="text-lg font-medium text-[#14213D] mb-4">
-            Top Categories
-          </h3>
-          <div className="space-y-4">
-            {summary.topCategories.map((category, index) => (
-              <div key={category.id || index} className="flex items-center">
-                <div className="w-8 h-8 flex items-center justify-center bg-[#FCA311]/10 rounded-full mr-3">
-                  <span className="text-[#FCA311] font-medium">
-                    {index + 1}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-[#14213D]">
+      {loading ? (
+        <div className="space-y-3">
+          {[1].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-100 h-14 rounded-lg animate-pulse"
+            ></div>
+          ))}
+        </div>
+      ) : !summary?.topCategories?.length ? (
+        <EmptyState message="No expense categories found. Please create a category first." />
+      ) : (
+        <div className="space-y-2">
+          {summary.topCategories.map((category, index) => (
+            <motion.div
+              key={category._id || index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white rounded-lg border border-gray-100 shadow-sm p-3"
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="bg-[#7678ed]/10 p-2 rounded-full mr-3">
+                    <FiPackage className="h-4 w-4 text-[#7678ed]" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-[#3d348b]">
                       {category.name}
-                    </span>
-                    <div className="text-right">
-                      <span className="text-gray-700 font-medium block">
-                        {formatCurrency(category.amount || 0)}
-                      </span>
-                      {category.count > 0 && (
-                        <span className="text-gray-500 text-xs">
-                          {category.count} expense
-                          {category.count !== 1 ? "s" : ""}
-                        </span>
-                      )}
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      {category.expenseCount || 0} expense
+                      {category.expenseCount !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-[#f35b04]">
+                    {formatCurrency(category.amount || 0)}
+                  </p>
+                  {summary.topCategories.length > 1 && (
+                    <div className="h-1.5 w-32 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{
+                          width: `${Math.min(
+                            100,
+                            (category.amount / (summary.totalAmount || 1)) * 100
+                          )}%`,
+                        }}
+                        transition={{ duration: 1, delay: index * 0.1 }}
+                        className="h-full bg-[#f7b801] rounded-full"
+                      ></motion.div>
                     </div>
-                  </div>
-                  <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-[#FCA311] h-1.5 rounded-full"
-                      style={{ width: `${category.percentage || 0}%` }}
-                    ></div>
-                  </div>
+                  )}
+                  {summary.topCategories.length === 1 && (
+                    <div className="h-1.5 w-32 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: 1 }}
+                        className="h-full bg-[#f7b801] rounded-full"
+                      ></motion.div>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+            </motion.div>
+          ))}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

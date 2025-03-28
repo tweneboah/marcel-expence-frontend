@@ -121,11 +121,6 @@ const AdminSidebar = () => {
           icon: <FaChartArea className="mr-2" />,
         },
         {
-          to: "/admin/reports/expense-trends",
-          label: "Expense Trends",
-          icon: <FaChartLine className="mr-2" />,
-        },
-        {
           to: "/admin/reports/forecast",
           label: "Expense Forecasting",
           icon: <FaChartLine className="mr-2" />,
@@ -178,18 +173,23 @@ const AdminSidebar = () => {
           icon: <FaTable className="mr-2" />,
         },
         {
+          to: "/admin/reports/budget-summary",
+          label: "Budget Summary Report",
+          icon: <FaChartBar className="mr-2" />,
+        },
+        {
           to: "/admin/reports/budget-comparison",
           label: "Budget Comparison",
           icon: <FaChartBar className="mr-2" />,
         },
         {
           to: "/admin/reports/all-budgets",
-          label: "All Budgets",
+          label: "All Budgets Report",
           icon: <FaFileAlt className="mr-2" />,
         },
         {
           to: "/admin/reports/budget-details",
-          label: "Budget Details",
+          label: "Budget Details Report",
           icon: <FaFileInvoiceDollar className="mr-2" />,
         },
       ],

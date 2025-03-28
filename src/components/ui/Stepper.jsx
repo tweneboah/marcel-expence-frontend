@@ -3,110 +3,133 @@ import { motion } from "framer-motion";
 import {
   FiMapPin,
   FiCheck,
-  FiTarget,
-  FiCrosshair,
-  FiNavigation,
+  FiCheckCircle,
+  FiTrendingUp,
+  FiArrowRight,
   FiDollarSign,
 } from "react-icons/fi";
 
-const steps = [
+const defaultSteps = [
   {
     id: 1,
-    name: "Start Location",
-    description: "Enter starting point",
+    name: "Start",
+    description: "Starting point",
     icon: <FiMapPin className="h-5 w-5" />,
+    color: "#7678ed",
   },
   {
     id: 2,
-    name: "Start Details",
-    description: "Confirm start location",
-    icon: <FiCheck className="h-5 w-5" />,
+    name: "Confirm",
+    description: "Confirm start",
+    icon: <FiCheckCircle className="h-5 w-5" />,
+    color: "#f7b801",
   },
   {
     id: 3,
-    name: "End Location",
-    description: "Enter destination",
-    icon: <FiTarget className="h-5 w-5" />,
+    name: "Destination",
+    description: "Destination point",
+    icon: <FiMapPin className="h-5 w-5" />,
+    color: "#7678ed",
   },
   {
     id: 4,
-    name: "End Details",
-    description: "Confirm end location",
-    icon: <FiCrosshair className="h-5 w-5" />,
+    name: "Waypoints",
+    description: "Add stops",
+    icon: <FiArrowRight className="h-5 w-5" />,
+    color: "#f7b801",
   },
   {
     id: 5,
-    name: "Distance",
+    name: "Calculate",
     description: "Calculate route",
-    icon: <FiNavigation className="h-5 w-5" />,
+    icon: <FiTrendingUp className="h-5 w-5" />,
+    color: "#3d348b",
   },
   {
     id: 6,
-    name: "Expense",
-    description: "Enter expense details",
+    name: "Details",
+    description: "Expense details",
     icon: <FiDollarSign className="h-5 w-5" />,
+    color: "#f35b04",
   },
 ];
 
-const Stepper = ({ currentStep }) => {
+const Stepper = ({ currentStep, steps = defaultSteps }) => {
   return (
-    <div className="py-4">
+    <div className="py-6 mb-6">
       <div className="max-w-7xl mx-auto">
         <nav aria-label="Progress">
-          <ol role="list" className="overflow-x-auto flex md:space-x-6 pb-4">
-            {steps.map((step) => (
+          <ol role="list" className="overflow-x-auto flex md:space-x-8 pb-4">
+            {steps.map((step, index) => (
               <motion.li
                 key={step.name}
-                className="md:flex-1 min-w-[140px] relative"
+                className="md:flex-1 min-w-[120px] relative"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                   duration: 0.3,
-                  delay: step.id * 0.1,
+                  delay: (index + 1) * 0.1,
                 }}
               >
                 <div
                   className={`flex flex-col border-l-0 border-t-4 pb-0 pt-4 ${
-                    step.id < currentStep
-                      ? "border-[#FCA311]"
-                      : step.id === currentStep
-                      ? "border-[#14213D]"
+                    index + 1 < currentStep
+                      ? `border-[${step.color}]`
+                      : index + 1 === currentStep
+                      ? `border-[${step.color}]`
                       : "border-gray-200"
                   }`}
+                  style={{
+                    borderTopColor:
+                      index + 1 <= currentStep ? step.color : "#e5e7eb",
+                  }}
                 >
                   <div className="flex items-center">
                     <div
-                      className={`flex items-center justify-center h-8 w-8 rounded-full mr-2 ${
-                        step.id < currentStep
-                          ? "bg-[#FCA311] text-white"
-                          : step.id === currentStep
-                          ? "bg-[#14213D] text-white"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
+                      className={`relative flex items-center justify-center h-9 w-9 rounded-full mr-2 transition-all duration-300`}
+                      style={{
+                        backgroundColor:
+                          index + 1 <= currentStep ? step.color : "#e5e7eb",
+                        color: index + 1 <= currentStep ? "#fff" : "#94a3b8",
+                      }}
                     >
-                      {step.id < currentStep ? (
+                      {index + 1 < currentStep ? (
                         <FiCheck className="h-5 w-5" />
                       ) : (
                         step.icon
                       )}
+                      {index + 1 === currentStep && (
+                        <motion.div
+                          className="absolute inset-0 rounded-full"
+                          animate={{
+                            boxShadow: [
+                              "0 0 0 0px rgba(255,255,255,0)",
+                              "0 0 0 4px rgba(255,255,255,0.2)",
+                            ],
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1.5,
+                            repeatType: "reverse",
+                          }}
+                        />
+                      )}
                     </div>
                     <span
-                      className={`text-sm font-semibold ${
-                        step.id < currentStep
-                          ? "text-[#FCA311]"
-                          : step.id === currentStep
-                          ? "text-[#14213D]"
-                          : "text-gray-500"
-                      }`}
+                      className="text-sm font-semibold"
+                      style={{
+                        color:
+                          index + 1 <= currentStep ? step.color : "#94a3b8",
+                      }}
                     >
-                      Step {step.id}
+                      {index + 1}
                     </span>
                   </div>
                   <div className="ml-10">
                     <span
                       className={`text-sm font-medium ${
-                        step.id <= currentStep
-                          ? "text-[#14213D]"
+                        index + 1 <= currentStep
+                          ? "text-[#3d348b]"
                           : "text-gray-500"
                       }`}
                     >

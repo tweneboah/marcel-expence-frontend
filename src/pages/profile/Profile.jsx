@@ -1,5 +1,18 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { motion } from "framer-motion";
+import {
+  FiUser,
+  FiMail,
+  FiLock,
+  FiShield,
+  FiSave,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiXCircle,
+  FiTrash2,
+  FiSettings,
+} from "react-icons/fi";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -18,6 +31,31 @@ const Profile = () => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 80,
+        damping: 12,
+      },
+    },
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,34 +143,71 @@ const Profile = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Profile Settings</h1>
-        <p className="text-gray-600">Manage your account information</p>
-      </div>
+    <motion.div
+      className="container mx-auto px-4 py-8 max-w-6xl"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div
+        className="flex items-center mb-2"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FiSettings className="text-[#f7b801] mr-3 text-2xl" />
+        <h1 className="text-3xl font-bold text-[#3d348b]">Profile Settings</h1>
+      </motion.div>
+
+      <motion.p
+        className="text-gray-600 mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
+        Manage your account information and preferences
+      </motion.p>
 
       {notification.message && (
-        <div
-          className={`mb-6 p-4 rounded ${
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className={`mb-6 p-4 rounded-lg flex items-center ${
             notification.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-400"
-              : "bg-red-50 text-red-800 border border-red-400"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
           }`}
         >
+          {notification.type === "success" ? (
+            <FiCheckCircle className="mr-3 text-green-500" />
+          ) : (
+            <FiXCircle className="mr-3 text-red-500" />
+          )}
           {notification.message}
-        </div>
+        </motion.div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Profile Information */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
+        <motion.div
+          className="bg-white shadow-md rounded-xl p-6 border border-gray-100"
+          variants={itemVariants}
+        >
+          <div className="flex items-center mb-4">
+            <FiUser className="text-[#7678ed] mr-2 text-xl" />
+            <h2 className="text-xl font-semibold text-[#3d348b]">
+              Profile Information
+            </h2>
+          </div>
+
           <form onSubmit={handleProfileUpdate}>
             <div className="mb-4">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
               >
+                <FiUser className="mr-2 text-gray-400" />
                 Full Name
               </label>
               <input
@@ -141,7 +216,7 @@ const Profile = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
                 required
               />
             </div>
@@ -149,8 +224,9 @@ const Profile = () => {
             <div className="mb-6">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
               >
+                <FiMail className="mr-2 text-gray-400" />
                 Email Address
               </label>
               <input
@@ -159,30 +235,49 @@ const Profile = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
                 required
               />
             </div>
 
-            <button
+            <motion.button
               type="submit"
-              className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#3d348b] to-[#7678ed] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7678ed] disabled:opacity-50 transition-all duration-300 flex items-center justify-center"
               disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading ? "Updating..." : "Update Profile"}
-            </button>
+              {loading ? (
+                "Updating..."
+              ) : (
+                <>
+                  <FiSave className="mr-2" />
+                  Update Profile
+                </>
+              )}
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
 
         {/* Change Password */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Change Password</h2>
+        <motion.div
+          className="bg-white shadow-md rounded-xl p-6 border border-gray-100"
+          variants={itemVariants}
+        >
+          <div className="flex items-center mb-4">
+            <FiLock className="text-[#f7b801] mr-2 text-xl" />
+            <h2 className="text-xl font-semibold text-[#3d348b]">
+              Change Password
+            </h2>
+          </div>
+
           <form onSubmit={handlePasswordChange}>
             <div className="mb-4">
               <label
                 htmlFor="currentPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
               >
+                <FiShield className="mr-2 text-gray-400" />
                 Current Password
               </label>
               <input
@@ -191,7 +286,7 @@ const Profile = () => {
                 name="currentPassword"
                 value={formData.currentPassword}
                 onChange={handleChange}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
                 required
               />
             </div>
@@ -199,8 +294,9 @@ const Profile = () => {
             <div className="mb-4">
               <label
                 htmlFor="newPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
               >
+                <FiLock className="mr-2 text-gray-400" />
                 New Password
               </label>
               <input
@@ -209,7 +305,7 @@ const Profile = () => {
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleChange}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
                 required
               />
             </div>
@@ -217,8 +313,9 @@ const Profile = () => {
             <div className="mb-6">
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
               >
+                <FiLock className="mr-2 text-gray-400" />
                 Confirm New Password
               </label>
               <input
@@ -227,42 +324,60 @@ const Profile = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
                 required
               />
             </div>
 
-            <button
+            <motion.button
               type="submit"
-              className="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#f7b801] to-[#f35b04] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f7b801] disabled:opacity-50 transition-all duration-300 flex items-center justify-center"
               disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading ? "Changing..." : "Change Password"}
-            </button>
+              {loading ? (
+                "Changing..."
+              ) : (
+                <>
+                  <FiLock className="mr-2" />
+                  Change Password
+                </>
+              )}
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
       </div>
 
       {/* Account Danger Zone */}
-      <div className="mt-8 bg-white shadow rounded-lg p-6 border border-red-200">
-        <h2 className="text-lg font-semibold mb-4 text-red-600">Danger Zone</h2>
-        <p className="text-gray-600 mb-4">
-          Once you delete your account, there is no going back. Please be
-          certain.
-        </p>
-        <button
-          type="button"
-          className="px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          onClick={() =>
-            window.confirm(
-              "Are you sure you want to delete your account? This action cannot be undone."
-            )
-          }
-        >
-          Delete Account
-        </button>
-      </div>
-    </div>
+      <motion.div
+        className="mt-8 bg-white shadow-md rounded-xl p-6 border border-red-200 relative overflow-hidden"
+        variants={itemVariants}
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 opacity-50 rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center mb-4">
+            <FiAlertTriangle className="text-red-500 mr-2 text-xl" />
+            <h2 className="text-xl font-semibold text-red-600">Danger Zone</h2>
+          </div>
+
+          <p className="text-gray-600 mb-4">
+            Once you delete your account, there is no going back. Please be
+            certain.
+          </p>
+
+          <motion.button
+            className="px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300 flex items-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <FiTrash2 className="mr-2" />
+            Delete Account
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

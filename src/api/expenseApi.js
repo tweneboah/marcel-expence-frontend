@@ -10,6 +10,7 @@ export const getExpenses = async (filters = {}) => {
     // Construct query string from filters
     const queryParams = new URLSearchParams();
 
+    // Date range filters
     if (filters.startDate) {
       queryParams.append("startDate", filters.startDate);
     }
@@ -18,40 +19,63 @@ export const getExpenses = async (filters = {}) => {
       queryParams.append("endDate", filters.endDate);
     }
 
+    // Category filter
     if (filters.categoryId) {
-      queryParams.append("categoryId", filters.categoryId);
+      queryParams.append("category", filters.categoryId);
     }
 
-    if (filters.minAmount) {
-      queryParams.append("minAmount", filters.minAmount);
+    if (filters.category) {
+      queryParams.append("category", filters.category);
     }
 
-    if (filters.maxAmount) {
-      queryParams.append("maxAmount", filters.maxAmount);
+    // Status filter
+    if (filters.status) {
+      queryParams.append("status", filters.status);
+    }
+
+    if (filters.filterStatus) {
+      queryParams.append("status", filters.filterStatus);
+    }
+
+    // Pagination
+    if (filters.page) {
+      queryParams.append("page", filters.page);
+    }
+
+    if (filters.limit) {
+      queryParams.append("limit", filters.limit);
+    }
+
+    // Sorting
+    if (filters.sort) {
+      queryParams.append("sort", filters.sort);
+    } else {
+      // Default sort by latest
+      queryParams.append("sort", "-createdAt");
+    }
+
+    // Select specific fields
+    if (filters.select) {
+      queryParams.append("select", filters.select);
     }
 
     // Convert queryParams to string
     const queryString = queryParams.toString();
     const url = `/expenses${queryString ? `?${queryString}` : ""}`;
 
+    console.log("🔍 Fetching expenses with URL:", url);
+    console.log(
+      "📦 Query parameters:",
+      Object.fromEntries(queryParams.entries())
+    );
+
     const response = await apiConfig.get(url);
-    console.log("Expenses response:", response.data);
+    console.log("✅ Expenses response:", response.data);
 
-    // Extract expenses data from the nested structure
-    const expenses = response.data.data || [];
-
-    // Map backend field names to frontend expected names
-    return expenses.map((expense) => ({
-      ...expense,
-      // Add mapping for fields if needed
-      distanceInKm: expense.distance,
-      startLocation: expense.startingPoint || expense.startLocation,
-      endLocation: expense.destinationPoint || expense.endLocation,
-      categoryId: expense.category?._id || expense.categoryId,
-      expenseDate: expense.journeyDate || expense.expenseDate,
-    }));
+    // Return the entire response data to preserve pagination and count
+    return response.data;
   } catch (error) {
-    console.error("Error fetching expenses:", error);
+    console.error("❌ Error fetching expenses:", error);
     throw error;
   }
 };
