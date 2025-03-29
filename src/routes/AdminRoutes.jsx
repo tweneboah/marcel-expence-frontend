@@ -31,7 +31,6 @@ import BudgetComparison from "../pages/reports/BudgetComparison";
 import AdvancedFilteredExpenses from "../pages/reports/AdvancedFilteredExpenses";
 import BudgetSummaryReport from "../pages/reports/BudgetSummaryReport";
 import AllBudgetsReport from "../pages/reports/AllBudgetsReport";
-import BudgetDetailsReport from "../pages/reports/BudgetDetailsReport";
 import Forecast from "../pages/reports/Forecast";
 import ReportsLayout from "../components/layout/ReportsLayout";
 
@@ -62,8 +61,6 @@ const AdminRoutes = () => {
           />
           <Route path="budget-summary" element={<BudgetSummaryReport />} />
           <Route path="all-budgets" element={<AllBudgetsReport />} />
-          <Route path="budget-details" element={<BudgetDetailsReport />} />
-          <Route path="budget-details/:id" element={<BudgetDetailsReport />} />
         </Route>
 
         <Route path="analytics" element={<Analytics />} />

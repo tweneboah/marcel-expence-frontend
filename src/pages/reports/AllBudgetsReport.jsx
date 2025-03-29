@@ -123,11 +123,11 @@ const AllBudgetsReport = () => {
 
         console.log("Budgets data:", data);
 
-        setBudgets(data.budgets || []);
+        setBudgets(data.data || []);
         setPagination({
           ...pagination,
-          total: data.totalBudgets || 0,
-          pages: data.totalPages || 1,
+          total: data.count || 0,
+          pages: Math.ceil((data.count || 0) / pagination.limit) || 1,
         });
       } catch (error) {
         console.error("Error fetching budgets:", error);
@@ -242,7 +242,7 @@ const AllBudgetsReport = () => {
       }
 
       const data = await response.json();
-      const allBudgets = data.budgets;
+      const allBudgets = data.data;
 
       if (allBudgets.length === 0) {
         toast.info("No budgets to export");
