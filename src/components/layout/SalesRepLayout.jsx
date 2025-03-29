@@ -21,7 +21,6 @@ const SalesRepLayout = ({ children }) => {
     { path: "/dashboard", label: "Dashboard", icon: "home" },
     { path: "/expenses", label: "Expenses", icon: "currency-dollar" },
     { path: "/expenses/create", label: "Add Expense", icon: "plus-circle" },
-    { path: "/reports", label: "Reports", icon: "chart-bar" },
     { path: "/profile", label: "Profile", icon: "user" },
   ];
 

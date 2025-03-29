@@ -1,20 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../api/apiConfig";
-import {
-  FaChartPie,
-  FaChartLine,
-  FaFileAlt,
-  FaCalendarAlt,
-  FaFilter,
-  FaBalanceScale,
-  FaChartBar,
-  FaFileExport,
-  FaChartArea,
-  FaWallet,
-  FaMoneyBillWave,
-  FaProjectDiagram,
-} from "react-icons/fa";
+import { FaFileExport, FaProjectDiagram } from "react-icons/fa";
 
 const Reports = () => {
   const navigate = useNavigate();
@@ -65,89 +52,6 @@ const Reports = () => {
     );
   };
 
-  // Report navigation cards
-  const reportCards = [
-    {
-      id: "ytd",
-      title: "YTD Reports",
-      description: "View comprehensive year-to-date expense reports",
-      icon: <FaCalendarAlt className="h-8 w-8 text-green-500" />,
-      path: "/admin/reports/ytd",
-      apiEndpoint: `${BASE_URL}/advanced-reports/ytd`,
-    },
-    {
-      id: "chart-data",
-      title: "Chart Data",
-      description:
-        "Visualize expenses data with customizable charts (pie, bar, line)",
-      icon: <FaChartPie className="h-8 w-8 text-blue-500" />,
-      path: "/admin/reports/chart-data",
-      apiEndpoint: `${BASE_URL}/advanced-reports/chart-data`,
-    },
-    {
-      id: "forecast",
-      title: "Expense Forecasting",
-      description: "Predict future expenses based on historical data",
-      icon: <FaChartLine className="h-8 w-8 text-indigo-500" />,
-      path: "/admin/reports/expense-forecasting",
-      apiEndpoint: `${BASE_URL}/advanced-reports/expense-forecasting`,
-    },
-    {
-      id: "advanced-forecast",
-      title: "Advanced Forecast",
-      description:
-        "Predict expenses with statistical models and confidence intervals",
-      icon: <FaChartArea className="h-8 w-8 text-teal-500" />,
-      path: "/admin/reports/forecast",
-      apiEndpoint: `${BASE_URL}/advanced-reports/forecast`,
-    },
-    {
-      id: "budget-comparison",
-      title: "Budget Comparison",
-      description: "Compare budgeted vs. actual expenses by category",
-      icon: <FaBalanceScale className="h-8 w-8 text-yellow-500" />,
-      path: "/admin/reports/budget-comparison",
-      apiEndpoint: `${BASE_URL}/advanced-reports/budget-comparison`,
-    },
-    {
-      id: "filtered-expenses",
-      title: "Filtered Expenses",
-      description: "Search and filter expenses with advanced criteria",
-      icon: <FaFilter className="h-8 w-8 text-purple-500" />,
-      path: "/admin/reports/filtered-expenses",
-      apiEndpoint: `${BASE_URL}/advanced-reports/expenses`,
-    },
-    {
-      id: "budget-summary",
-      title: "Budget Summary",
-      description: "View summary of all budget allocations and usage",
-      icon: <FaWallet className="h-8 w-8 text-orange-500" />,
-      path: "/admin/reports/budget-summary",
-      apiEndpoint: `${BASE_URL}/budgets/summary`,
-    },
-    {
-      id: "all-budgets",
-      title: "All Budgets",
-      description: "List and manage all budget entries",
-      icon: <FaMoneyBillWave className="h-8 w-8 text-red-500" />,
-      path: "/admin/reports/all-budgets",
-      apiEndpoint: `${BASE_URL}/budgets`,
-    },
-    {
-      id: "budget-details",
-      title: "Budget Details",
-      description: "View detailed information about a specific budget",
-      icon: <FaProjectDiagram className="h-8 w-8 text-cyan-500" />,
-      path: "/admin/reports/budget-details",
-      apiEndpoint: `${BASE_URL}/budgets/:id`,
-    },
-  ];
-
-  // Handle navigation when clicking a report card
-  const handleReportCardClick = (path) => {
-    navigate(path);
-  };
-
   return (
     <div>
       <div className="mb-6">
@@ -192,33 +96,6 @@ const Reports = () => {
           <div className="text-3xl font-bold text-blue-600">12</div>
           <p className="text-gray-500 text-sm mt-1">Last 30 days</p>
         </div>
-      </div>
-
-      <h2 className="text-xl font-semibold mb-4">Available Reports</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-        {reportCards.map((card) => (
-          <div
-            key={card.id}
-            onClick={() => handleReportCardClick(card.path)}
-            className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-all duration-300 cursor-pointer hover:bg-gray-50 hover:translate-y-[-2px]"
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="p-3 rounded-full bg-gray-100 mb-3">
-                {card.icon}
-              </div>
-              <h3 className="font-semibold text-lg">{card.title}</h3>
-              <p className="text-gray-600 mt-1 mb-3 text-sm">
-                {card.description}
-              </p>
-              <div className="text-xs text-gray-500 mt-auto">
-                {card.apiEndpoint}
-              </div>
-              <div className="text-blue-600 text-sm mt-2 flex items-center justify-center">
-                View Report <span className="ml-1">→</span>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* Export options */}

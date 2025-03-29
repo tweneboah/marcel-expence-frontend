@@ -172,21 +172,13 @@ const AdminLayout = ({ children }) => {
           label: "Chart Data",
           icon: <FaChartArea size={14} />,
         },
-        {
-          path: "/admin/reports/expense-trends",
-          label: "Expense Trends",
-          icon: <FaTable size={14} />,
-        },
+
         {
           path: "/admin/reports/forecast",
           label: "Expense Forecasting",
           icon: <FaChartLine size={14} />,
         },
-        {
-          path: "/admin/reports/yearly-comparison",
-          label: "Yearly Comparison",
-          icon: <FaTable size={14} />,
-        },
+
         {
           path: "/admin/reports/filtered-expenses",
           label: "Advanced Filtered Expenses",
@@ -196,16 +188,6 @@ const AdminLayout = ({ children }) => {
           path: "/admin/reports/budget-summary",
           label: "Budget Summary",
           icon: <FaTable size={14} />,
-        },
-        {
-          path: "/admin/reports/all-budgets",
-          label: "All Budgets",
-          icon: <FaWallet size={14} />,
-        },
-        {
-          path: "/admin/reports/budget-details",
-          label: "Budget Details",
-          icon: <FaFileInvoiceDollar size={14} />,
         },
       ],
     },
