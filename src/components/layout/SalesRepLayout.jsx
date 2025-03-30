@@ -11,6 +11,7 @@ import {
   FiMenu,
   FiX,
   FiSettings,
+  FiBook,
 } from "react-icons/fi";
 
 const SalesRepLayout = ({ children }) => {
@@ -61,6 +62,11 @@ const SalesRepLayout = ({ children }) => {
       icon: <FiPlusCircle size={18} />,
     },
     { path: "/profile", label: "Profile", icon: <FiUser size={18} /> },
+    {
+      path: "/documentation",
+      label: "Documentation",
+      icon: <FiBook size={18} />,
+    },
   ];
 
   // Animation variants

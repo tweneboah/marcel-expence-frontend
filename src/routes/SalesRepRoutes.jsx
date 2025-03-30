@@ -7,6 +7,7 @@ import ExpenseDetails from "../pages/expenses/ExpenseDetails";
 import CreateExpense from "../pages/expenses/CreateExpense";
 import EditExpense from "../pages/expenses/EditExpense";
 import Profile from "../pages/profile/Profile";
+import Documentation from "../pages/documentation/Documentation";
 
 const SalesRepRoutes = () => {
   const location = useLocation();
@@ -32,6 +33,9 @@ const SalesRepRoutes = () => {
 
         {/* Profile routes */}
         <Route path="profile" element={<Profile />} />
+
+        {/* Documentation route */}
+        <Route path="documentation" element={<Documentation />} />
 
         {/* Redirect /home to / */}
         <Route path="home" element={<Navigate to="/" replace />} />

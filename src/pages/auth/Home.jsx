@@ -298,6 +298,25 @@ const Home = () => {
               </p>
             </motion.div>
           </div>
+
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <Link to="/features">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] text-white px-8 py-3 rounded-lg font-medium shadow-lg shadow-[#3d348b]/30 flex items-center mx-auto"
+              >
+                <span>View All Features</span>
+                <FaArrowRight className="ml-2" />
+              </motion.button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 

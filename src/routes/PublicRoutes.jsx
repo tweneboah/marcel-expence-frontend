@@ -5,6 +5,7 @@ import NotFound from "../pages/error/NotFound";
 import Home from "../pages/auth/Home";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+import Features from "../pages/public/Features";
 
 const PublicRoutes = () => {
   return (
@@ -13,6 +14,7 @@ const PublicRoutes = () => {
       <Route path="register" element={<Register />} />
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="reset-password/:resettoken" element={<ResetPassword />} />
+      <Route path="features" element={<Features />} />
 
       {/* Home page */}
       <Route path="/" element={<Home />} />

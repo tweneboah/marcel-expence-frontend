@@ -23,6 +23,7 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
+  FaBook,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -203,6 +204,11 @@ const AdminLayout = ({ children }) => {
       path: "/admin/profile",
       label: "Profile",
       icon: <FaUserCircle size={18} />,
+    },
+    {
+      path: "/admin/documentation",
+      label: "Documentation",
+      icon: <FaBook size={18} />,
     },
     {
       path: "/admin/settings",
