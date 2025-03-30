@@ -121,6 +121,12 @@ const AdminLayout = ({ children }) => {
       submenu: true,
       subItems: [
         {
+          path: "/admin/analytics",
+          label: "Dashboard",
+          icon: <FaChartLine size={14} />,
+        },
+
+        {
           path: "/admin/analytics/time-summary",
           label: "Time Summary",
           icon: <FaCalendarAlt size={14} />,

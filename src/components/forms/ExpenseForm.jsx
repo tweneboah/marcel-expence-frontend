@@ -15,6 +15,7 @@ import {
 } from "../../api/expenseApi";
 import { useExpenseRoutes } from "../../utils/routeHelpers";
 import { useAuth } from "../../context/AuthContext";
+import useSettingsValue from "../../hooks/useSettingsValue";
 import PlaceAutocomplete from "./PlaceAutocomplete";
 import Button from "../ui/Button";
 import Stepper from "../ui/Stepper";
@@ -61,8 +62,11 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
   const [waypoints, setWaypoints] = useState(initialData.waypoints || []);
   const [optimizeRoute, setOptimizeRoute] = useState(false);
 
-  // Default expense rate per km in CHF
-  const DEFAULT_COST_PER_KM = 0.7;
+  // Get cost per km from settings API with fallback to default
+  const [costPerKm, costPerKmLoading] = useSettingsValue(
+    "costPerKilometer",
+    0.7
+  );
 
   const [formData, setFormData] = useState({
     startLocation: initialData.startLocation || "",
@@ -71,7 +75,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
     endPlaceId: initialData.endPlaceId || "",
     waypoints: initialData.waypoints || [],
     distanceInKm: initialData.distanceInKm || 0,
-    costPerKm: initialData.costPerKm || DEFAULT_COST_PER_KM,
+    costPerKm: initialData.costPerKm || 0.7, // Will be updated from settings
     totalCost: initialData.totalCost || 0,
     expenseDate:
       initialData.expenseDate || new Date().toISOString().split("T")[0],
@@ -79,6 +83,20 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
     notes: initialData.notes || "",
     status: initialData.status || "pending",
   });
+
+  // Update costPerKm in formData when it's loaded from settings
+  useEffect(() => {
+    if (!costPerKmLoading && costPerKm !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        costPerKm,
+        // Recalculate total cost if distance is already set
+        totalCost: prev.distanceInKm
+          ? prev.distanceInKm * costPerKm
+          : prev.totalCost,
+      }));
+    }
+  }, [costPerKm, costPerKmLoading]);
 
   // Track origin and destination for map view
   const [originPlace, setOriginPlace] = useState(null);
@@ -150,7 +168,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
           initialData.endPlaceId || initialData.destinationPointPlaceId || "",
         waypoints: initialData.waypoints || [],
         distanceInKm: initialData.distanceInKm || initialData.distance || 0,
-        costPerKm: initialData.costPerKm || DEFAULT_COST_PER_KM,
+        costPerKm: initialData.costPerKm || 0.7,
         totalCost: initialData.totalCost || 0,
         expenseDate:
           initialData.expenseDate ||
@@ -466,7 +484,11 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         throw new Error("Invalid distance: must be positive");
       }
 
-      const totalCost = calculateTotalCost(distanceInKm, formData.costPerKm);
+      // Use the costPerKm from state when calculating
+      const calculatedTotalCost = calculateTotalCost(
+        distanceInKm,
+        formData.costPerKm
+      );
 
       // If we have optimized waypoints, update the waypoints order
       if (
@@ -484,7 +506,7 @@ const ExpenseForm = ({ initialData = {}, isEdit = false }) => {
         ...prev,
         waypoints: validWaypoints,
         distanceInKm: distanceInKm,
-        totalCost: totalCost,
+        totalCost: calculatedTotalCost,
         distanceText: result.distanceText || `${distanceInKm.toFixed(2)} km`,
         durationText: result.durationText || "Unknown duration",
         routeSnapshot: result, // Store full route data for later use

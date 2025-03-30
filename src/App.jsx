@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { SettingsProvider } from "./context/SettingsContext";
 import PublicRoutes from "./routes/PublicRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 import SalesRepRoutes from "./routes/SalesRepRoutes";
@@ -18,7 +19,7 @@ function App() {
   }
 
   return (
-    <>
+    <SettingsProvider>
       {/* <GoogleMapComponent /> */}
       <Routes>
         {/* Public routes - accessible when not authenticated */}
@@ -67,7 +68,7 @@ function App() {
           </>
         )}
       </Routes>
-    </>
+    </SettingsProvider>
   );
 }
 

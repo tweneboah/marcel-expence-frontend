@@ -392,7 +392,7 @@ const BudgetDashboard = () => {
               </p>
             </motion.div>
             <div className="flex flex-wrap gap-3">
-              <Link to="/admin/budgets">
+              <Link to="/admin/reports/all-budgets">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

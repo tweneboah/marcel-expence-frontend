@@ -184,7 +184,7 @@ const CategoryFilter = ({
         </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-5">
         {/* Search input */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -290,27 +290,6 @@ const CategoryFilter = ({
           </select>
         </div>
 
-        {/* Usage threshold */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Usage Above (%)
-          </label>
-          <input
-            type="number"
-            value={filters.usageAbove || ""}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                usageAbove: e.target.value ? Number(e.target.value) : undefined,
-              })
-            }
-            placeholder="e.g. 80"
-            min="0"
-            max="100"
-            className="w-full border border-gray-200 rounded-lg py-2.5 px-3 focus:ring-[#7678ed] focus:border-[#7678ed] transition-all duration-200"
-          />
-        </div>
-
         {/* Additional options (checkboxes) */}
         <div className="flex flex-col justify-center space-y-2">
           <label className="inline-flex items-center">
@@ -327,23 +306,6 @@ const CategoryFilter = ({
             />
             <span className="ml-2 text-sm text-gray-700">
               Show expense counts
-            </span>
-          </label>
-
-          <label className="inline-flex items-center">
-            <input
-              type="checkbox"
-              checked={filters.compareWithPrevious === true}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  compareWithPrevious: e.target.checked,
-                })
-              }
-              className="rounded border-gray-300 text-[#3d348b] focus:ring-[#7678ed]"
-            />
-            <span className="ml-2 text-sm text-gray-700">
-              Compare with previous
             </span>
           </label>
         </div>
@@ -569,9 +531,7 @@ const CategoryList = () => {
     isActive: undefined,
     hasBudget: undefined,
     period: "",
-    usageAbove: undefined,
     includeExpenseCounts: true,
-    compareWithPrevious: false,
   });
 
   // Applied filters state (only update when apply button is clicked)
@@ -632,9 +592,7 @@ const CategoryList = () => {
       isActive: undefined,
       hasBudget: undefined,
       period: "",
-      usageAbove: undefined,
       includeExpenseCounts: true,
-      compareWithPrevious: false,
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);

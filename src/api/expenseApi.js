@@ -234,14 +234,8 @@ export const getExpenseCategories = async (options = {}) => {
     if (options.includeExpenseCounts !== undefined)
       queryParams.append("includeExpenseCounts", options.includeExpenseCounts);
 
-    // Usage filtering
-    if (options.usageAbove)
-      queryParams.append("usageAbove", options.usageAbove);
-
     // Period options
     if (options.period) queryParams.append("period", options.period);
-    if (options.compareWithPrevious !== undefined)
-      queryParams.append("compareWithPrevious", options.compareWithPrevious);
 
     // User-specific data
     if (options.withUserUsage !== undefined)

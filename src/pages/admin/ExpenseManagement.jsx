@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getExpenses, getExpenseCategories } from "../../api/expenseApi";
+import {
+  getExpenses,
+  getExpenseCategories,
+  deleteExpense,
+} from "../../api/expenseApi";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import ExpenseFilters from "../../components/expenses/ExpenseFilters";
@@ -33,6 +37,7 @@ import {
   FaMoneyBillWave,
   FaUserAlt,
 } from "react-icons/fa";
+import { Alert } from "../../components/ui/Alert";
 
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
@@ -45,6 +50,10 @@ const ExpenseManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [notification, setNotification] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
   const routes = useExpenseRoutes();
 
   // Fetch categories on component mount
@@ -157,8 +166,123 @@ const ExpenseManagement = () => {
 
   // Export expenses as CSV
   const handleExportCSV = () => {
-    // Implementation for CSV export would go here
-    alert("Export to CSV functionality would be implemented here");
+    try {
+      // Show loading indicator during export
+      setLoading(true);
+
+      // If no expenses to export, show notification
+      if (filteredExpenses.length === 0) {
+        setNotification({
+          type: "warning",
+          message:
+            "No expenses to export. Please adjust your filters or add expenses.",
+        });
+        setTimeout(() => setNotification(null), 5000);
+        setLoading(false);
+        return;
+      }
+
+      // Define CSV headers
+      const headers = [
+        "ID",
+        "Employee",
+        "Email",
+        "Date",
+        "Starting Point",
+        "Destination Point",
+        "Distance (km)",
+        "Category",
+        "Amount (CHF)",
+        "Status",
+        "Notes",
+      ];
+
+      // Transform expenses data into CSV rows
+      const csvData = filteredExpenses.map((expense) => [
+        expense._id,
+        expense.user?.name || "Unknown User",
+        expense.user?.email || "",
+        formatDate(expense.journeyDate || expense.expenseDate),
+        expense.startingPoint || expense.startLocation || "",
+        expense.destinationPoint || expense.endLocation || "",
+        (expense.distance || expense.distanceInKm || 0).toFixed(2),
+        expense.category?.name || "Uncategorized",
+        (expense.totalCost || 0).toFixed(2),
+        expense.status
+          ? expense.status.charAt(0).toUpperCase() + expense.status.slice(1)
+          : "Pending",
+        expense.notes || "",
+      ]);
+
+      // Add headers to the beginning of the data array
+      csvData.unshift(headers);
+
+      // Convert data to CSV format
+      const csvContent = csvData
+        .map((row) =>
+          row
+            .map((cell) => {
+              // Handle fields with commas, quotes, or newlines by enclosing in quotes
+              const cellStr = String(cell).replace(/"/g, '""');
+              return /[,"\n\r]/.test(cellStr) ? `"${cellStr}"` : cellStr;
+            })
+            .join(",")
+        )
+        .join("\n");
+
+      // Create a Blob with the CSV data
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      // Create a download link
+      const link = document.createElement("a");
+
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
+
+      // Generate a filename with date and time
+      const now = new Date();
+      const dateStr = now.toISOString().split("T")[0];
+      const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "-");
+      const filename = `expenses-export-${dateStr}-${timeStr}.csv`;
+
+      // Set the link's properties
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = "hidden";
+
+      // Add the link to the document
+      document.body.appendChild(link);
+
+      // Trigger the download
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Show success notification
+      setNotification({
+        type: "success",
+        message: `${filteredExpenses.length} expenses exported successfully`,
+      });
+
+      // Auto-dismiss notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+    } catch (error) {
+      console.error("Failed to export expenses:", error);
+
+      // Show error notification
+      setNotification({
+        type: "error",
+        message:
+          "Failed to export expenses: " +
+          (error.message || "Unknown error occurred"),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Filter expenses by search term (client-side filtering)
@@ -244,6 +368,57 @@ const ExpenseManagement = () => {
     }
   };
 
+  // Prepare expense deletion
+  const confirmDeleteExpense = (id) => {
+    setExpenseToDelete(id);
+    setShowDeleteConfirm(true);
+    setDeleteError(null);
+  };
+
+  // Cancel deletion
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setExpenseToDelete(null);
+  };
+
+  // Handle expense deletion
+  const handleDeleteExpense = async () => {
+    if (!expenseToDelete) return;
+
+    try {
+      setLoading(true);
+      await deleteExpense(expenseToDelete);
+
+      // Remove the deleted expense from the state
+      setExpenses(
+        expenses.filter((expense) => expense._id !== expenseToDelete)
+      );
+
+      // Update total items count
+      setTotalItems((prev) => prev - 1);
+
+      // Show success notification
+      setNotification({
+        type: "success",
+        message: "Expense deleted successfully",
+      });
+
+      // Close the confirmation modal
+      setShowDeleteConfirm(false);
+      setExpenseToDelete(null);
+
+      // Auto-dismiss notification after 5 seconds
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+    } catch (error) {
+      console.error("Failed to delete expense:", error);
+      setDeleteError("Failed to delete expense. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <motion.div
       className="container mx-auto px-4 py-8"
@@ -251,6 +426,64 @@ const ExpenseManagement = () => {
       animate="visible"
       variants={containerVariants}
     >
+      {/* Show notification if exists */}
+      {notification && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <Alert
+            variant={notification.type}
+            onClose={() => setNotification(null)}
+          >
+            {notification.message}
+          </Alert>
+        </motion.div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-lg p-6 max-w-md w-full"
+          >
+            <h3 className="text-xl font-bold text-[#3d348b] mb-4">
+              Confirm Deletion
+            </h3>
+            <p className="mb-6">
+              Are you sure you want to delete this expense? This action cannot
+              be undone.
+            </p>
+
+            {deleteError && (
+              <div className="mb-4 p-2 border border-red-300 bg-red-50 text-red-800 rounded">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3">
+              <Button variant="secondary" onClick={cancelDelete}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteExpense}
+                className="bg-[#f35b04] hover:bg-[#f35b04]/90 text-white"
+              >
+                Delete Expense
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Header Section */}
       <motion.div
         className="relative mb-8 bg-gradient-to-r from-[#3d348b] to-[#7678ed] rounded-xl shadow-lg overflow-hidden"
@@ -662,14 +895,7 @@ const ExpenseManagement = () => {
                         <button
                           className="text-red-600 hover:text-red-900"
                           title="Delete expense"
-                          onClick={() => {
-                            if (window.confirm("Delete this expense?")) {
-                              // Delete logic would go here
-                              alert(
-                                "Delete functionality would be implemented here"
-                              );
-                            }
-                          }}
+                          onClick={() => confirmDeleteExpense(expense._id)}
                         >
                           <FiTrash2 />
                         </button>

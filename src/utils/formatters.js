@@ -9,6 +9,10 @@
  * @returns {string} The formatted currency string
  */
 export const formatCurrency = (amount, currency = "CHF") => {
+  if (amount === undefined || amount === null) {
+    return `${currency} 0.00`;
+  }
+
   return new Intl.NumberFormat("de-CH", {
     style: "currency",
     currency: currency,
@@ -18,18 +22,64 @@ export const formatCurrency = (amount, currency = "CHF") => {
 };
 
 /**
- * Format a date string to a localized date format
- * @param {string|Date} date - The date to format
- * @returns {string} The formatted date string
+ * Safely formats a date string to a readable format
+ * @param {string|Date} dateValue - Date string or Date object
+ * @param {string} [format="default"] - Format option (default, short, long)
+ * @returns {string} - Formatted date string or fallback text
  */
-export const formatDate = (date) => {
-  if (!date) return "";
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return dateObj.toLocaleDateString("de-CH", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+export const formatDate = (dateValue, format = "default") => {
+  if (!dateValue) return "N/A";
+
+  try {
+    // Handle ISO string, timestamp, or date object
+    let date;
+
+    if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === "string") {
+      // Try parsing as ISO string
+      date = new Date(dateValue);
+
+      // If invalid, try DD-MM-YYYY format
+      if (isNaN(date.getTime())) {
+        const parts = dateValue.split(/[-\/\.]/);
+        if (parts.length === 3) {
+          // Try various date formats
+          date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); // DD-MM-YYYY
+
+          // If still invalid, try MM-DD-YYYY
+          if (isNaN(date.getTime())) {
+            date = new Date(`${parts[2]}-${parts[0]}-${parts[1]}`); // MM-DD-YYYY
+          }
+        }
+      }
+    } else if (typeof dateValue === "number") {
+      date = new Date(dateValue);
+    } else {
+      return "N/A";
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid date format:", dateValue);
+      return "N/A";
+    }
+
+    // Format based on preference
+    const options = {
+      default: { day: "numeric", month: "short", year: "numeric" },
+      short: { day: "numeric", month: "numeric", year: "2-digit" },
+      long: { day: "numeric", month: "long", year: "numeric" },
+    };
+
+    return date.toLocaleDateString(
+      undefined,
+      options[format] || options.default
+    );
+  } catch (error) {
+    console.error("Date formatting error:", error, "for value:", dateValue);
+    return "N/A";
+  }
 };
 
 /**

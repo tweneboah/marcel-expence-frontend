@@ -8,8 +8,12 @@ import {
   FiMap,
 } from "react-icons/fi";
 import { FaRoute, FaCarSide } from "react-icons/fa";
+import useSettingsValue from "../../hooks/useSettingsValue";
 
 const CreateExpense = () => {
+  // Get the current cost per kilometer from settings
+  const [costPerKm] = useSettingsValue("costPerKilometer", 0.7);
+
   return (
     <motion.div
       className="container mx-auto px-4 py-8"
@@ -133,7 +137,7 @@ const CreateExpense = () => {
               </div>
               <span>
                 The system automatically calculates costs based on distance at
-                the standard rate of 0.70 CHF per kilometer.
+                the standard rate of {costPerKm.toFixed(2)} CHF per kilometer.
               </span>
             </li>
           </ul>

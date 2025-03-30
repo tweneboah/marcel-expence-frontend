@@ -11,9 +11,63 @@ const API = axios.create({
   },
 });
 
+// Circuit breaker to prevent API call loops
+const recentCalls = {};
+const THROTTLE_WINDOW = 1000; // 1 second
+
 // Request interceptor for adding auth token
 API.interceptors.request.use(
   (config) => {
+    // Circuit breaker to prevent API call loops
+    const endpoint = config.url;
+    const now = Date.now();
+
+    // Check if we've made this exact call recently
+    if (
+      recentCalls[endpoint] &&
+      now - recentCalls[endpoint].time < THROTTLE_WINDOW
+    ) {
+      recentCalls[endpoint].count++;
+
+      // If we're seeing rapid repeated calls, block them
+      if (recentCalls[endpoint].count > 3) {
+        console.warn(
+          `Blocking repeated call to ${endpoint} (${recentCalls[endpoint].count} calls in 1s)`
+        );
+
+        // For GET requests, return the last response if we have it
+        if (config.method === "get" && recentCalls[endpoint].lastResponse) {
+          return Promise.resolve({
+            data: {
+              ...recentCalls[endpoint].lastResponse,
+              _cached: true,
+            },
+          });
+        }
+
+        throw new axios.Cancel(
+          `Circuit breaker: Too many calls to ${endpoint}`
+        );
+      }
+    } else {
+      // First call or after window
+      recentCalls[endpoint] = { time: now, count: 1, lastResponse: null };
+    }
+
+    // Handle /settings/defaults endpoint specifically
+    if (endpoint === "/settings/defaults") {
+      console.warn(
+        "Intercepted request to non-existent /settings/defaults endpoint"
+      );
+      const mockResponse = {
+        data: {
+          success: true,
+          data: [],
+        },
+      };
+      throw { __MOCK_RESPONSE__: mockResponse };
+    }
+
     const token = localStorage.getItem("token");
     console.log(`API Request to ${config.url}`, {
       hasToken: !!token,
@@ -45,6 +99,12 @@ API.interceptors.request.use(
 // Response interceptor for handling errors
 API.interceptors.response.use(
   (response) => {
+    // Store this response in our circuit breaker
+    const endpoint = response.config.url;
+    if (recentCalls[endpoint]) {
+      recentCalls[endpoint].lastResponse = response.data;
+    }
+
     // Log successful responses
     console.log(`API Response success from ${response.config.url}:`, {
       status: response.status,
@@ -56,6 +116,12 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Check if this is our mock response for /settings/defaults
+    if (error.__MOCK_RESPONSE__) {
+      console.log("Returning mock response for intercepted endpoint");
+      return error.__MOCK_RESPONSE__;
+    }
+
     console.error(`API Error for ${error.config?.url || "unknown endpoint"}:`, {
       message: error.message,
       status: error.response?.status,

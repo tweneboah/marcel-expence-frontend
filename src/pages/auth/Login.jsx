@@ -161,6 +161,14 @@ const Login = () => {
                 className="block w-full px-10 py-3 border border-[#abff4f] rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#29bf12] focus:border-[#29bf12] transition-all duration-200"
               />
             </div>
+            <div className="mt-2 text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-[#08bdbd] hover:text-[#29bf12] transition-colors duration-200"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </motion.div>
 
           <motion.div variants={itemVariants}>

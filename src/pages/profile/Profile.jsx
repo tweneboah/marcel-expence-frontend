@@ -13,17 +13,12 @@ import {
   FiTrash2,
   FiSettings,
 } from "react-icons/fi";
+import UpdateProfile from "./UpdateProfile";
+import ChangePassword from "./ChangePassword";
 
 const Profile = () => {
   const { user } = useAuth();
-
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  const [activeTab, setActiveTab] = useState("profile"); // profile or password
 
   const [notification, setNotification] = useState({
     type: "",
@@ -57,14 +52,6 @@ const Profile = () => {
     },
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -72,8 +59,8 @@ const Profile = () => {
     try {
       // This would be an API call in a real app
       console.log("Updating profile:", {
-        name: formData.name,
-        email: formData.email,
+        name: user?.name,
+        email: user?.email,
       });
 
       // Simulate API delay
@@ -100,7 +87,7 @@ const Profile = () => {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
-    if (formData.newPassword !== formData.confirmPassword) {
+    if (user?.newPassword !== user?.confirmPassword) {
       setNotification({
         type: "error",
         message: "New passwords do not match.",
@@ -116,13 +103,6 @@ const Profile = () => {
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setFormData({
-        ...formData,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
 
       setNotification({
         type: "success",
@@ -188,164 +168,78 @@ const Profile = () => {
         </motion.div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Profile Information */}
+      {/* Tab Navigation */}
+      <div className="mb-8 border-b border-gray-200">
+        <nav className="-mb-px flex" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`${
+              activeTab === "profile"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center mr-8`}
+          >
+            <FiUser className="mr-2" />
+            Profile Information
+          </button>
+          <button
+            onClick={() => setActiveTab("password")}
+            className={`${
+              activeTab === "password"
+                ? "border-indigo-500 text-indigo-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+          >
+            <FiLock className="mr-2" />
+            Change Password
+          </button>
+        </nav>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* User Info Card */}
         <motion.div
-          className="bg-white shadow-md rounded-xl p-6 border border-gray-100"
+          className="bg-white shadow-md rounded-xl p-6 border border-gray-100 h-fit"
           variants={itemVariants}
         >
-          <div className="flex items-center mb-4">
-            <FiUser className="text-[#7678ed] mr-2 text-xl" />
-            <h2 className="text-xl font-semibold text-[#3d348b]">
-              Profile Information
-            </h2>
+          <div className="flex justify-center mb-6">
+            <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-500 text-4xl">
+              {user?.name ? user.name.charAt(0).toUpperCase() : <FiUser />}
+            </div>
           </div>
 
-          <form onSubmit={handleProfileUpdate}>
-            <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <FiUser className="mr-2 text-gray-400" />
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                required
-              />
+          <div className="border-t border-gray-100 pt-4 mt-2">
+            <div className="flex items-center py-2">
+              <FiUser className="text-gray-400 mr-3" />
+              <div>
+                <div className="text-xs text-gray-500">Name</div>
+                <div className="font-medium">{user?.name || "Not set"}</div>
+              </div>
             </div>
 
-            <div className="mb-6">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <FiMail className="mr-2 text-gray-400" />
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                required
-              />
+            <div className="flex items-center py-2">
+              <FiMail className="text-gray-400 mr-3" />
+              <div>
+                <div className="text-xs text-gray-500">Email</div>
+                <div className="font-medium">{user?.email || "Not set"}</div>
+              </div>
             </div>
 
-            <motion.button
-              type="submit"
-              className="w-full px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#3d348b] to-[#7678ed] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7678ed] disabled:opacity-50 transition-all duration-300 flex items-center justify-center"
-              disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {loading ? (
-                "Updating..."
-              ) : (
-                <>
-                  <FiSave className="mr-2" />
-                  Update Profile
-                </>
-              )}
-            </motion.button>
-          </form>
+            <div className="flex items-center py-2">
+              <FiShield className="text-gray-400 mr-3" />
+              <div>
+                <div className="text-xs text-gray-500">Role</div>
+                <div className="font-medium capitalize">
+                  {user?.role || "User"}
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Change Password */}
-        <motion.div
-          className="bg-white shadow-md rounded-xl p-6 border border-gray-100"
-          variants={itemVariants}
-        >
-          <div className="flex items-center mb-4">
-            <FiLock className="text-[#f7b801] mr-2 text-xl" />
-            <h2 className="text-xl font-semibold text-[#3d348b]">
-              Change Password
-            </h2>
-          </div>
-
-          <form onSubmit={handlePasswordChange}>
-            <div className="mb-4">
-              <label
-                htmlFor="currentPassword"
-                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <FiShield className="mr-2 text-gray-400" />
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="newPassword"
-                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <FiLock className="mr-2 text-gray-400" />
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleChange}
-                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                required
-              />
-            </div>
-
-            <div className="mb-6">
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2 flex items-center"
-              >
-                <FiLock className="mr-2 text-gray-400" />
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                required
-              />
-            </div>
-
-            <motion.button
-              type="submit"
-              className="w-full px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#f7b801] to-[#f35b04] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f7b801] disabled:opacity-50 transition-all duration-300 flex items-center justify-center"
-              disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {loading ? (
-                "Changing..."
-              ) : (
-                <>
-                  <FiLock className="mr-2" />
-                  Change Password
-                </>
-              )}
-            </motion.button>
-          </form>
+        {/* Main Content Area */}
+        <motion.div className="md:col-span-2" variants={itemVariants}>
+          {activeTab === "profile" ? <UpdateProfile /> : <ChangePassword />}
         </motion.div>
       </div>
 
