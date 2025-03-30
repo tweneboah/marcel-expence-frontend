@@ -33,6 +33,7 @@ import BudgetSummaryReport from "../pages/reports/BudgetSummaryReport";
 import AllBudgetsReport from "../pages/reports/AllBudgetsReport";
 import Forecast from "../pages/reports/Forecast";
 import ReportsLayout from "../components/layout/ReportsLayout";
+import Profile from "../pages/profile/Profile";
 
 const AdminRoutes = () => {
   const location = useLocation();
@@ -46,6 +47,7 @@ const AdminRoutes = () => {
         {/* Admin routes */}
         <Route path="users" element={<UserManagement />} />
         <Route path="settings" element={<SystemSettings />} />
+        <Route path="profile" element={<Profile />} />
 
         {/* Reports routes with separate layout */}
         <Route path="reports" element={<ReportsLayout />}>

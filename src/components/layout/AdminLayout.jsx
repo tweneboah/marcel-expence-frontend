@@ -22,6 +22,7 @@ import {
   FaUser,
   FaBars,
   FaTimes,
+  FaUserCircle,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -93,6 +94,7 @@ const AdminLayout = ({ children }) => {
       label: "Categories",
       icon: <FaTags size={18} />,
     },
+
     {
       label: "Budgets",
       icon: <FaWallet size={18} />,
@@ -196,6 +198,11 @@ const AdminLayout = ({ children }) => {
           icon: <FaTable size={14} />,
         },
       ],
+    },
+    {
+      path: "/admin/profile",
+      label: "Profile",
+      icon: <FaUserCircle size={18} />,
     },
     {
       path: "/admin/settings",
@@ -514,13 +521,19 @@ const AdminLayout = ({ children }) => {
                   <p className="text-sm font-medium text-[#3d348b]">
                     {user?.name || "Admin User"}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {user?.email || "admin@example.com"}
-                  </p>
+                  <Link
+                    to="/admin/profile"
+                    className="text-xs text-gray-500 hover:text-[#f35b04] transition-colors duration-200"
+                  >
+                    View Profile
+                  </Link>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#3d348b] to-[#7678ed] flex items-center justify-center text-white">
+                <Link
+                  to="/admin/profile"
+                  className="h-10 w-10 rounded-full bg-gradient-to-r from-[#3d348b] to-[#7678ed] flex items-center justify-center text-white hover:shadow-md transition-all duration-200"
+                >
                   {user?.name ? user.name.charAt(0).toUpperCase() : <FaUser />}
-                </div>
+                </Link>
               </div>
             </div>
           </div>
