@@ -327,34 +327,7 @@ const Analytics = () => {
         ))}
       </motion.div>
 
-      <motion.div
-        className="mt-12 rounded-xl overflow-hidden shadow-lg"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
-      >
-        <div className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] p-8 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#f7b801] opacity-10 rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#f35b04] opacity-10 rounded-full transform -translate-x-1/2 translate-y-1/2"></div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between relative z-10">
-            <div className="mb-6 md:mb-0">
-              <h3 className="text-2xl font-bold mb-2">Need a custom report?</h3>
-              <p className="text-blue-100 max-w-lg">
-                Generate tailored reports with the specific metrics you need for
-                better decision making
-              </p>
-            </div>
-            <Link
-              to="/admin/reports"
-              className="group px-6 py-3 bg-white text-[#3d348b] rounded-xl font-medium hover:shadow-md transition-all duration-200 flex items-center"
-            >
-              <span>Go to Reports</span>
-              <FiArrowRight className="ml-2 transform group-hover:translate-x-1 transition-all duration-200" />
-            </Link>
-          </div>
-        </div>
-      </motion.div>
     </div>
   );
 };

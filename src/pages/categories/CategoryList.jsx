@@ -25,7 +25,6 @@ import {
   FiList,
   FiSettings,
   FiInfo,
-  FiDollarSign,
   FiCalendar,
 } from "react-icons/fi";
 

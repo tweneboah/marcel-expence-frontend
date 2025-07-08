@@ -8,7 +8,7 @@ import {
   FiCalendar,
   FiPieChart,
   FiTrendingUp,
-  FiDollarSign,
+  FiCreditCard,
   FiBarChart2,
   FiList,
   FiFileText,
@@ -264,7 +264,7 @@ const CategoryBreakdown = () => {
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
                 <h3 className="text-sm font-medium text-[#f7b801]/80 mb-1 flex items-center">
-                  <FiDollarSign className="mr-2 text-[#f7b801]" />
+                  <FiCreditCard className="mr-2 text-[#f7b801]" />
                   Total Cost
                 </h3>
                 <p className="text-3xl font-bold text-[#f7b801]">
@@ -434,7 +434,7 @@ const CategoryBreakdown = () => {
                       </div>
                       <div className="bg-[#f7b801]/5 p-3 rounded-lg">
                         <span className="text-xs text-[#f7b801] font-medium flex items-center">
-                          <FiDollarSign className="mr-1" />
+                          <FiCreditCard className="mr-1" />
                           Avg Cost
                         </span>
                         <p className="font-bold text-[#3d348b] mt-1">

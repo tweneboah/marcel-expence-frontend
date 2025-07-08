@@ -8,7 +8,7 @@ import { formatCurrency } from "../../../utils/formatters";
 import {
   FiCalendar,
   FiTrendingUp,
-  FiDollarSign,
+  FiCreditCard,
   FiBarChart2,
   FiMap,
   FiPieChart,
@@ -303,7 +303,7 @@ const TimeSummary = () => {
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
                 <h3 className="text-sm font-medium text-[#f7b801]/80 mb-1 flex items-center">
-                  <FiDollarSign className="mr-2 text-[#f7b801]" />
+                  <FiCreditCard className="mr-2 text-[#f7b801]" />
                   Total Cost
                 </h3>
                 <p className="text-3xl font-bold text-[#f7b801]">

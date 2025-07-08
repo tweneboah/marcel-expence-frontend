@@ -41,6 +41,7 @@ const UserManagement = () => {
     role: "sales_rep",
     status: "active",
   });
+  const [passwordError, setPasswordError] = useState("");
 
   // Animation variants
   const containerVariants = {
@@ -128,11 +129,27 @@ const UserManagement = () => {
       ...formData,
       [name]: value,
     });
+
+    // Password validation for add user form
+    if (name === "password" && showAddUserModal) {
+      if (value.length > 0 && value.length < 6) {
+        setPasswordError("Password must be at least 6 characters long");
+      } else {
+        setPasswordError("");
+      }
+    }
   };
 
   // Handle add user form submission
   const handleAddUser = async (e) => {
     e.preventDefault();
+    
+    // Client-side password validation
+    if (formData.password.length < 6) {
+      setPasswordError("Password must be at least 6 characters long");
+      return;
+    }
+    
     try {
       const response = await createUser(formData);
       setUsers([...users, response.data]);
@@ -143,6 +160,7 @@ const UserManagement = () => {
         role: "sales_rep",
         status: "active",
       });
+      setPasswordError("");
       setShowAddUserModal(false);
       toast.success("User added successfully");
     } catch (err) {
@@ -270,6 +288,7 @@ const UserManagement = () => {
               role: "sales_rep",
               status: "active",
             });
+            setPasswordError("");
             setShowAddUserModal(true);
           }}
           className="bg-gradient-to-r from-[#3d348b] to-[#7678ed] text-white px-4 py-2 rounded-lg hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7678ed] transition-all duration-300 flex items-center"
@@ -527,10 +546,19 @@ const UserManagement = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="block w-full border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all"
-                    placeholder="Create password"
+                    className={`block w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-[#7678ed] focus:border-[#7678ed] transition-all ${
+                      passwordError ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Create password (min 6 characters)"
+                    minLength={6}
                     required
                   />
+                  {passwordError && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <FiAlertTriangle className="mr-1" />
+                      {passwordError}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -579,9 +607,14 @@ const UserManagement = () => {
 
                   <motion.button
                     type="submit"
-                    className="px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-[#3d348b] to-[#7678ed] hover:shadow-md transition-all duration-300 flex items-center"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={passwordError || formData.password.length < 6}
+                    className={`px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white transition-all duration-300 flex items-center ${
+                      passwordError || formData.password.length < 6
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-[#3d348b] to-[#7678ed] hover:shadow-md'
+                    }`}
+                    whileHover={passwordError || formData.password.length < 6 ? {} : { scale: 1.02 }}
+                    whileTap={passwordError || formData.password.length < 6 ? {} : { scale: 0.98 }}
                   >
                     <FiSave className="mr-2" />
                     Add User

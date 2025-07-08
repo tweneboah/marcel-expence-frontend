@@ -12,7 +12,7 @@ import {
 import {
   FiCalendar,
   FiArrowLeft,
-  FiDollarSign,
+  FiCreditCard,
   FiMap,
   FiTrendingUp,
   FiFileText,
@@ -418,7 +418,7 @@ const PeriodDetail = () => {
               </p>
             </div>
             <div className="p-3 rounded-lg bg-[#f35b04]/15">
-              <FiDollarSign className="text-2xl text-[#f35b04]" />
+              <FiCreditCard className="text-2xl text-[#f35b04]" />
             </div>
           </div>
         </motion.div>

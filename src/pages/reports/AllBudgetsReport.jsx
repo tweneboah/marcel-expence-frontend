@@ -362,7 +362,7 @@ const AllBudgetsReport = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => handleExport()}
-            className="flex items-center px-3 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm"
+            className="mb-4 flex items-center px-4 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm"
           >
             <FaFileExport className="mr-2" />
             Export CSV
@@ -458,7 +458,7 @@ const AllBudgetsReport = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => handleExport()}
               disabled={isExporting}
-              className="flex items-center px-3 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-[#f7b801] to-[#f35b04] text-white rounded-md hover:shadow-lg transition-all duration-300 shadow-sm disabled:opacity-50"
             >
               {isExporting ? (
                 <>

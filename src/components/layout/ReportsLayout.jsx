@@ -36,7 +36,7 @@ const ReportsLayout = () => {
           <div className="py-4">
             <h1 className="text-2xl font-bold text-white flex items-center">
               <FaRegCalendarAlt className="mr-2" />
-              Reports Dashboard
+            Budget Reports Dashboard
             </h1>
             <p className="text-gray-200 mt-1">
               View, analyze, and export your expense data
@@ -81,7 +81,7 @@ const ReportsLayout = () => {
                 <h4 className="font-medium">Export Options</h4>
               </div>
               <p className="text-sm text-gray-600">
-                Export your reports in PDF, CSV, or Excel formats for easy
+                Export your reports in CSV or Excel formats for easy
                 sharing.
               </p>
             </motion.div>

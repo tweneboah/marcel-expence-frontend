@@ -13,7 +13,7 @@ import {
   FiChevronDown,
   FiActivity,
   FiMapPin,
-  FiDollarSign,
+  FiCreditCard,
   FiList,
   FiDatabase,
   FiArrowUp,
@@ -412,7 +412,7 @@ const ExpenseTrends = () => {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                         <div className="flex items-center">
-                          <FiDollarSign className="mr-1" />
+                          <FiCreditCard className="mr-1" />
                           Total Cost
                         </div>
                       </th>

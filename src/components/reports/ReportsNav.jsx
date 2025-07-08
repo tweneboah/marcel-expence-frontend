@@ -23,77 +23,77 @@ const ReportsNav = () => {
       label: "YTD Reports",
       path: "/admin/reports/ytd",
       icon: <FaFileAlt className="mr-2 text-green-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/ytd`,
+      
     },
     {
       id: "chart-data",
       label: "Chart Data",
       path: "/admin/reports/chart-data",
       icon: <FaChartPie className="mr-2 text-blue-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/chart-data`,
+
     },
     {
       id: "forecast",
       label: "Expense Forecasting",
       path: "/admin/reports/expense-forecasting",
       icon: <FaChartLine className="mr-2 text-indigo-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/expense-forecasting`,
+      
     },
     {
       id: "advanced-forecast",
       label: "Advanced Forecast",
       path: "/admin/reports/forecast",
       icon: <FaChartArea className="mr-2 text-teal-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/forecast`,
+    
     },
     {
       id: "budget-comparison",
       label: "Budget Comparison",
       path: "/admin/reports/budget-comparison",
       icon: <FaChartBar className="mr-2 text-yellow-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/budget-comparison`,
+     
     },
     {
       id: "filtered-expenses",
       label: "Filtered Expenses",
       path: "/admin/reports/filtered-expenses",
       icon: <FaFilter className="mr-2 text-purple-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/advanced-reports/expenses`,
+    
     },
     {
       id: "budget-summary",
       label: "Budget Summary",
       path: "/admin/reports/budget-summary",
       icon: <FaWallet className="mr-2 text-orange-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/budgets/summary`,
+     
     },
     {
       id: "all-budgets",
       label: "All Budgets",
       path: "/admin/reports/all-budgets",
       icon: <FaMoneyBillWave className="mr-2 text-red-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/budgets`,
+      
     },
     {
       id: "budget-details",
       label: "Budget Details",
       path: "/admin/reports/budget-details",
       icon: <FaProjectDiagram className="mr-2 text-cyan-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/budgets/:id`,
+     
     },
     {
       id: "expense-trends",
       label: "Expense Trends",
       path: "/admin/reports/expense-trends",
       icon: <FaChartLine className="mr-2 text-teal-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/reports/expense-trends`,
+     
     },
     {
       id: "yearly-comparison",
       label: "Yearly Comparison",
       path: "/admin/reports/yearly-comparison",
       icon: <FaChartArea className="mr-2 text-pink-500" size={18} />,
-      apiEndpoint: `${BASE_URL}/reports/yearly-comparison`,
+    
     },
   ];
 
@@ -108,7 +108,7 @@ const ReportsNav = () => {
           <div className="p-3 rounded-full bg-gray-100 mb-3">{report.icon}</div>
           <span className="font-medium">{report.label}</span>
           <span className="text-xs text-gray-500 mt-1">
-            {report.apiEndpoint}
+          View Reports
           </span>
         </Link>
       ))}

@@ -128,6 +128,9 @@ const AdminDashboard = () => {
         },
         ticks: {
           color: "#f35b04",
+          callback: function(value) {
+            return Math.round(value);
+          },
         },
       },
       y1: {
@@ -144,6 +147,9 @@ const AdminDashboard = () => {
         },
         ticks: {
           color: "#7678ed",
+          callback: function(value) {
+            return Math.round(value);
+          },
         },
       },
     },
@@ -297,60 +303,6 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Monthly Stats */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#7678ed]/30">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="font-semibold text-xl mb-2 flex items-center">
-                  <div className="mr-3 p-2 bg-[#7678ed]/10 rounded-lg">
-                    <FiCalendar className="text-[#7678ed] text-xl" />
-                  </div>
-                  Current Month
-                </h2>
-                <div className="text-gray-600 text-sm mb-4">
-                  {dashboardData?.timeInfo?.currentMonth}
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                Month
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
-                <p className="text-gray-500 text-xs uppercase">Trips</p>
-                <p className="font-bold text-2xl text-[#7678ed]">
-                  {dashboardData?.monthlyMetrics?.totalTrips || 0}
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
-                <p className="text-gray-500 text-xs uppercase">Distance</p>
-                <div className="font-bold text-2xl text-[#7678ed] flex items-end">
-                  {dashboardData?.monthlyMetrics?.totalDistance || 0}
-                  <span className="text-sm ml-1 text-gray-500">km</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
-                <p className="text-gray-500 text-xs uppercase">Total Cost</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
-                  {formatCurrency(
-                    dashboardData?.monthlyMetrics?.totalCost || 0,
-                    "CHF"
-                  )}
-                </p>
-              </div>
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
-                <p className="text-gray-500 text-xs uppercase">Avg Per Trip</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
-                  {formatCurrency(
-                    dashboardData?.monthlyMetrics?.avgCostPerTrip || 0,
-                    "CHF"
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Quarterly Stats */}
           <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f7b801]/30">
             <div className="flex items-start justify-between">
@@ -405,13 +357,67 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Monthly Stats */}
+          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#7678ed]/30">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="font-semibold text-xl mb-2 flex items-center">
+                  <div className="mr-3 p-2 bg-[#7678ed]/10 rounded-lg">
+                    <FiCalendar className="text-[#7678ed] text-xl" />
+                  </div>
+                  Current Month
+                </h2>
+                <div className="text-gray-600 text-sm mb-4">
+                  {dashboardData?.timeInfo?.currentMonth}
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                Month
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
+                <p className="text-gray-500 text-xs uppercase">Trips</p>
+                <p className="font-bold text-2xl text-[#7678ed]">
+                  {dashboardData?.monthlyMetrics?.totalTrips || 0}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
+                <p className="text-gray-500 text-xs uppercase">Distance</p>
+                <div className="font-bold text-2xl text-[#7678ed] flex items-end">
+                  {dashboardData?.monthlyMetrics?.totalDistance || 0}
+                  <span className="text-sm ml-1 text-gray-500">km</span>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+                <p className="text-gray-500 text-xs uppercase">Total Cost</p>
+                <p className="font-bold text-2xl text-[#f35b04]">
+                  {formatCurrency(
+                    dashboardData?.monthlyMetrics?.totalCost || 0,
+                    "CHF"
+                  )}
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+                <p className="text-gray-500 text-xs uppercase">Avg Per Trip</p>
+                <p className="font-bold text-2xl text-[#f35b04]">
+                  {formatCurrency(
+                    dashboardData?.monthlyMetrics?.avgCostPerTrip || 0,
+                    "CHF"
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* System Settings */}
           <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f35b04]/30">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-xl mb-2 flex items-center">
                   <div className="mr-3 p-2 bg-[#f35b04]/10 rounded-lg">
-                    <FiDollarSign className="text-[#f35b04] text-xl" />
+                    <FiSettings className="text-[#f35b04] text-xl" />
                   </div>
                   System Settings
                 </h2>

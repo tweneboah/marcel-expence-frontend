@@ -27,7 +27,6 @@ import {
   FiInfo,
   FiArrowUpRight,
   FiFileText,
-  FiDollarSign,
 } from "react-icons/fi";
 import {
   FaCar,
@@ -656,7 +655,7 @@ const ExpenseManagement = () => {
               </p>
             </div>
             <div className="h-12 w-12 rounded-full bg-[#f7b801]/10 flex items-center justify-center text-[#f7b801]">
-              <FiDollarSign className="h-6 w-6" />
+              <FiTrendingUp className="h-6 w-6" />
             </div>
           </div>
         </motion.div>
@@ -921,9 +920,8 @@ const ExpenseManagement = () => {
                 <FiInfo className="mr-2" /> Summary
               </h3>
               <p className="text-white/80">
-                Showing {paginationInfo?.startItem || 1}-
-                {paginationInfo?.endItem || filteredExpenses.length} of{" "}
-                {totalItems} expenses
+                {Math.ceil(totalItems / itemsPerPage) > 0 ? currentPage : 1} of{" "}
+                {Math.ceil(totalItems / itemsPerPage) || 1} expenses
               </p>
               {Object.keys(filters).length > 0 && (
                 <div className="mt-2 text-xs text-white/80 max-w-md">

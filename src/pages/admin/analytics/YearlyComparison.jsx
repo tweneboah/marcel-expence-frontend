@@ -12,7 +12,7 @@ import {
   FiChevronDown,
   FiArrowUp,
   FiArrowDown,
-  FiDollarSign,
+  FiCreditCard,
   FiMapPin,
   FiList,
   FiActivity,
@@ -375,7 +375,7 @@ const YearlyComparison = () => {
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
                 <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-[#f35b04]/10 flex items-center justify-center">
-                  <FiDollarSign className="text-3xl text-[#f35b04]/30" />
+                  <FiCreditCard className="text-3xl text-[#f35b04]/30" />
                 </div>
                 <h3 className="text-sm font-medium text-[#f35b04]/80 mb-1 flex items-center">
                   <FiPercent className="mr-2 text-[#f35b04]" />
@@ -392,7 +392,7 @@ const YearlyComparison = () => {
               variants={chartVariants}
             >
               <h3 className="text-xl font-semibold mb-4 text-[#3d348b] flex items-center">
-                <FiDollarSign className="mr-2 text-[#f35b04]" />
+                <FiCreditCard className="mr-2 text-[#f35b04]" />
                 Monthly Cost Comparison
               </h3>
               <div className="h-80">
@@ -460,7 +460,7 @@ const YearlyComparison = () => {
                   </div>
                   <div className="flex justify-between items-center p-3 rounded-lg bg-[#f7b801]/5 hover:bg-[#f7b801]/10 transition-colors">
                     <span className="text-[#3d348b] flex items-center">
-                      <FiDollarSign className="mr-2 text-[#7678ed]" />
+                      <FiCreditCard className="mr-2 text-[#7678ed]" />
                       Total Cost:
                     </span>
                     <span className="font-medium text-[#3d348b]">
@@ -503,7 +503,7 @@ const YearlyComparison = () => {
                   </div>
                   <div className="flex justify-between items-center p-3 rounded-lg bg-[#f35b04]/5 hover:bg-[#f35b04]/10 transition-colors">
                     <span className="text-[#3d348b] flex items-center">
-                      <FiDollarSign className="mr-2 text-[#7678ed]" />
+                      <FiCreditCard className="mr-2 text-[#7678ed]" />
                       Total Cost:
                     </span>
                     <span className="font-medium text-[#3d348b]">

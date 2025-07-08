@@ -68,10 +68,23 @@ const AdminLayout = ({ children }) => {
   };
 
   const toggleSubmenu = (menu) => {
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [menu]: !prev[menu],
-    }));
+    setExpandedMenus((prev) => {
+      // If the menu is already open, close it
+      if (prev[menu]) {
+        return {
+          ...prev,
+          [menu]: false,
+        };
+      }
+      
+      // Close all other menus and open the selected one
+      const newState = {};
+      Object.keys(prev).forEach(key => {
+        newState[key] = key === menu;
+      });
+      
+      return newState;
+    });
   };
 
   const menuItems = [
