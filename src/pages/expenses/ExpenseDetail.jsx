@@ -378,7 +378,24 @@ const ExpenseDetail = () => {
               Notes
             </h3>
             <p className="text-sm text-gray-900 whitespace-pre-wrap">
-              {expense.notes || "No notes provided."}
+              {(() => {
+                if (!expense.notes) return "No notes provided.";
+                
+                // Check if notes is a JSON string with original/enhanced structure
+                if (typeof expense.notes === 'string' && expense.notes.startsWith('{')) {
+                  try {
+                    const parsedNotes = JSON.parse(expense.notes);
+                    // Return enhanced notes if available, otherwise original
+                    return parsedNotes.enhanced || parsedNotes.original || expense.notes;
+                  } catch (e) {
+                    // If parsing fails, return the original string
+                    return expense.notes;
+                  }
+                }
+                
+                // If it's already plain text, return as is
+                return expense.notes;
+              })()}
             </p>
           </div>
         </div>

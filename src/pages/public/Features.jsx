@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +22,20 @@ import Footer from "../../components/layout/Footer";
 
 const Features = () => {
   const [activeFeature, setActiveFeature] = useState(null);
+
+  // Add ESC key functionality to close modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && activeFeature) {
+        setActiveFeature(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [activeFeature]);
 
   // Main feature cards with detailed descriptions
   const featureCards = [
@@ -662,6 +676,12 @@ const Features = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Link
           to="/"
+          onClick={() => {
+            // Scroll to top when navigating to home
+            setTimeout(() => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 100);
+          }}
           className="flex items-center text-[#3d348b] hover:text-[#7678ed] transition-colors"
         >
           <FaArrowLeft className="mr-2" />

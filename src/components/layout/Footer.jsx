@@ -23,10 +23,18 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div>
-            <div className="flex items-center mb-6">
+            <Link 
+              to="/" 
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+              }}
+              className="flex items-center mb-6 hover:opacity-80 transition-opacity"
+            >
               <FaMoneyBillWave className="text-[#f7b801] text-3xl mr-2" />
               <span className="text-2xl font-bold">AussenDienst</span>
-            </div>
+            </Link>
             <p className="text-white/80 mb-6">
               Simplifying expense management for sales representatives on the
               road.
@@ -70,6 +78,11 @@ const Footer = () => {
               <li>
                 <Link
                   to="/"
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                  }}
                   className="text-white/80 hover:text-[#f7b801] transition-colors flex items-center"
                 >
                   <span className="mr-2">→</span> Home
@@ -78,6 +91,11 @@ const Footer = () => {
               <li>
                 <Link
                   to="/features"
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                  }}
                   className="text-white/80 hover:text-[#f7b801] transition-colors flex items-center"
                 >
                   <span className="mr-2">→</span> Features
@@ -150,24 +168,39 @@ const Footer = () => {
             reserved.
           </p>
           <div className="flex space-x-6 text-sm">
-            <a
-              href="#"
+            <Link
+              to="/"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+              }}
               className="text-white/60 hover:text-white transition-colors"
             >
               Privacy Policy
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+              }}
               className="text-white/60 hover:text-white transition-colors"
             >
               Terms of Service
-            </a>
-            <a
-              href="#"
+            </Link>
+            <Link
+              to="/"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+              }}
               className="text-white/60 hover:text-white transition-colors"
             >
               Cookie Policy
-            </a>
+            </Link>
           </div>
         </div>
       </div>

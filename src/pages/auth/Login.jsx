@@ -101,7 +101,7 @@ const Login = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            Willkommen Zurück
+            Willkommen zurück
           </motion.h2>
           <motion.p
             className="text-xl text-center text-white/80 mb-8"

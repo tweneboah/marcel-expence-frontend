@@ -306,7 +306,15 @@ const Home = () => {
             transition={{ duration: 0.5, delay: 0.7 }}
             viewport={{ once: true }}
           >
-            <Link to="/features">
+            <Link 
+              to="/features"
+              onClick={() => {
+                // Scroll to top when navigating to features page
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 100);
+              }}
+            >
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

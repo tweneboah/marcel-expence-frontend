@@ -497,7 +497,26 @@ const ExpenseDetails = () => {
               <h3 className="font-medium flex items-center text-[#3d348b] mb-2">
                 <FiFileText className="mr-2" /> Notes
               </h3>
-              <p className="text-gray-700">{notes}</p>
+              <p className="text-gray-700">
+                {(() => {
+                  if (!notes) return "No notes provided.";
+                  
+                  // Check if notes is a JSON string with original/enhanced structure
+                  if (typeof notes === 'string' && notes.startsWith('{')) {
+                    try {
+                      const parsedNotes = JSON.parse(notes);
+                      // Return enhanced notes if available, otherwise original
+                      return parsedNotes.enhanced || parsedNotes.original || notes;
+                    } catch (e) {
+                      // If parsing fails, return the original string
+                      return notes;
+                    }
+                  }
+                  
+                  // If it's already plain text, return as is
+                  return notes;
+                })()}
+              </p>
             </div>
           )}
         </Card>
