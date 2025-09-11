@@ -221,36 +221,37 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#3d348b]/5 to-[#f35b04]/5 px-4 py-6 overflow-hidden">
-      <div className="container mx-auto">
-        <div className="mb-8 bg-white p-6 rounded-2xl shadow-md border border-gray-100">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#3d348b] to-[#7678ed] bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-[#3d348b]/5 to-[#f35b04]/5 px-3 sm:px-4 py-4 sm:py-6 lg:py-8 overflow-hidden">
+      <div className="container mx-auto max-w-7xl px-1 sm:px-0">
+        <div className="mb-4 sm:mb-6 lg:mb-8 bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="w-full sm:w-auto">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#3d348b] to-[#7678ed] bg-clip-text text-transparent">
                 Admin Dashboard
               </h1>
-              <p className="text-gray-600 flex items-center gap-2">
+              <p className="text-gray-600 flex items-center gap-2 text-sm sm:text-base">
                 <FiUsers className="text-[#f7b801]" /> Welcome, {user?.name}!
               </p>
             </div>
-            <div className="mt-4 md:mt-0 flex items-center gap-3">
-              <div className="py-1 px-3 bg-indigo-100 text-[#3d348b] text-sm rounded-full font-medium">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+              <div className="py-1 px-2 sm:px-3 bg-indigo-100 text-[#3d348b] text-xs sm:text-sm rounded-full font-medium">
                 {dashboardData?.timeInfo?.currentYear}
               </div>
               <Link
                 to="/admin/settings"
-                className="flex items-center gap-1 py-2 px-4 bg-[#3d348b] hover:bg-[#3d348b]/90 text-white rounded-full transition-all duration-300 text-sm font-medium"
+                className="flex items-center gap-1 py-2 px-3 sm:px-4 bg-[#3d348b] hover:bg-[#3d348b]/90 text-white rounded-full transition-all duration-300 text-xs sm:text-sm font-medium"
               >
-                <FiSettings className="text-[#f7b801]" /> Settings
+                <FiSettings className="text-[#f7b801]" /> 
+                <span className="hidden sm:inline">Settings</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* Summary Metrics Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Yearly Total Stats */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#3d348b]/30">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#3d348b]/30">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-xl mb-2 flex items-center">
@@ -268,32 +269,32 @@ const AdminDashboard = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gradient-to-br from-[#3d348b]/10 to-[#7678ed]/10 p-4 rounded-lg">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mt-4">
+              <div className="bg-gradient-to-br from-[#3d348b]/10 to-[#7678ed]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Trips</p>
-                <p className="font-bold text-2xl text-[#3d348b]">
+                <p className="font-bold text-xl sm:text-2xl text-[#3d348b]">
                   {dashboardData?.yearlyMetrics?.totalTrips || 0}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-[#3d348b]/10 to-[#7678ed]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#3d348b]/10 to-[#7678ed]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Distance</p>
-                <div className="font-bold text-2xl text-[#3d348b] flex items-end">
+                <div className="font-bold text-xl sm:text-2xl text-[#3d348b] flex items-end">
                   {dashboardData?.yearlyMetrics?.totalDistance || 0}
                   <span className="text-sm ml-1 text-gray-500">km</span>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Total Cost</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.yearlyMetrics?.totalCost || 0,
                     "CHF"
                   )}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Avg Per Trip</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.yearlyMetrics?.avgCostPerTrip || 0,
                     "CHF"
@@ -304,7 +305,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Quarterly Stats */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f7b801]/30">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f7b801]/30">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-xl mb-2 flex items-center">
@@ -322,23 +323,23 @@ const AdminDashboard = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mt-4">
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Trips</p>
-                <p className="font-bold text-2xl text-[#f7b801]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f7b801]">
                   {dashboardData?.quarterlyMetrics?.totalTrips || 0}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Distance</p>
-                <div className="font-bold text-2xl text-[#f7b801] flex items-end">
+                <div className="font-bold text-xl sm:text-2xl text-[#f7b801] flex items-end">
                   {dashboardData?.quarterlyMetrics?.totalDistance || 0}
                   <span className="text-sm ml-1 text-gray-500">km</span>
                 </div>
               </div>
               <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Total Cost</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.quarterlyMetrics?.totalCost || 0,
                     "CHF"
@@ -347,7 +348,7 @@ const AdminDashboard = () => {
               </div>
               <div className="bg-gradient-to-br from-[#f35b04]/10 to-[#f7b801]/10 p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Avg Per Trip</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.quarterlyMetrics?.avgCostPerTrip || 0,
                     "CHF"
@@ -358,7 +359,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Monthly Stats */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#7678ed]/30">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#7678ed]/30">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-xl mb-2 flex items-center">
@@ -376,32 +377,32 @@ const AdminDashboard = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 mt-4">
+              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#f7b801]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Trips</p>
-                <p className="font-bold text-2xl text-[#7678ed]">
+                <p className="font-bold text-xl sm:text-2xl text-[#7678ed]">
                   {dashboardData?.monthlyMetrics?.totalTrips || 0}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#7678ed]/10 to-[#3d348b]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Distance</p>
-                <div className="font-bold text-2xl text-[#7678ed] flex items-end">
+                <div className="font-bold text-xl sm:text-2xl text-[#7678ed] flex items-end">
                   {dashboardData?.monthlyMetrics?.totalDistance || 0}
                   <span className="text-sm ml-1 text-gray-500">km</span>
                 </div>
               </div>
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Total Cost</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.monthlyMetrics?.totalCost || 0,
                     "CHF"
                   )}
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-br from-[#f7b801]/10 to-[#f35b04]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Avg Per Trip</p>
-                <p className="font-bold text-2xl text-[#f35b04]">
+                <p className="font-bold text-xl sm:text-2xl text-[#f35b04]">
                   {formatCurrency(
                     dashboardData?.monthlyMetrics?.avgCostPerTrip || 0,
                     "CHF"
@@ -412,7 +413,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* System Settings */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f35b04]/30">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 hover:border-[#f35b04]/30">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="font-semibold text-xl mb-2 flex items-center">
@@ -446,11 +447,11 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-500 ml-1">/km</p>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-[#3d348b]/10 to-[#7678ed]/10 p-4 rounded-lg">
+              <div className="bg-gradient-to-r from-[#3d348b]/10 to-[#7678ed]/10 p-3 sm:p-4 rounded-lg">
                 <p className="text-gray-500 text-xs uppercase">Active Users</p>
                 <div className="flex items-center">
                   <FiUsers className="text-[#7678ed] mr-2" />
-                  <p className="font-bold text-2xl text-[#3d348b]">
+                  <p className="font-bold text-xl sm:text-2xl text-[#3d348b]">
                     {dashboardData?.settings?.activeUsers || "N/A"}
                   </p>
                 </div>
@@ -460,16 +461,16 @@ const AdminDashboard = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
           {/* Monthly Expenses Chart */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-            <h2 className="font-semibold text-xl mb-6 flex items-center">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <h2 className="font-semibold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center">
               <div className="mr-3 p-2 bg-[#3d348b]/10 rounded-lg">
                 <FiBarChart2 className="text-[#3d348b] text-xl" />
               </div>
               Monthly Expenses
             </h2>
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               {dashboardData?.monthlyExpensesChart ? (
                 <div>
                   <ExpenseChart
@@ -490,14 +491,14 @@ const AdminDashboard = () => {
           </div>
 
           {/* Category Breakdown Chart */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-            <h2 className="font-semibold text-xl mb-6 flex items-center">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <h2 className="font-semibold text-lg sm:text-xl mb-4 sm:mb-6 flex items-center">
               <div className="mr-3 p-2 bg-[#7678ed]/10 rounded-lg">
                 <FiPieChart className="text-[#7678ed] text-xl" />
               </div>
               Category Breakdown
             </h2>
-            <div className="h-80">
+            <div className="h-64 sm:h-80">
               {dashboardData?.categoryBreakdown ? (
                 <div>
                   <ExpenseChart
@@ -518,9 +519,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-semibold text-xl flex items-center">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
+            <h2 className="font-semibold text-lg sm:text-xl flex items-center">
               <div className="mr-3 p-2 bg-[#f7b801]/10 rounded-lg">
                 <FiTrendingUp className="text-[#f7b801] text-xl" />
               </div>
@@ -528,7 +529,7 @@ const AdminDashboard = () => {
             </h2>
             <Link
               to="/admin/expenses"
-              className="flex items-center gap-1 py-2 px-4 bg-[#f7b801] hover:bg-[#f7b801]/90 text-white rounded-full transition-all duration-300 text-sm font-medium"
+              className="flex items-center gap-1 py-2 px-3 sm:px-4 bg-[#f7b801] hover:bg-[#f7b801]/90 text-white rounded-full transition-all duration-300 text-xs sm:text-sm font-medium"
             >
               View All <FiArrowRight />
             </Link>
@@ -536,25 +537,25 @@ const AdminDashboard = () => {
 
           {dashboardData?.recentExpenses &&
           dashboardData.recentExpenses.length > 0 ? (
-            <div className="overflow-x-auto rounded-xl">
-              <table className="min-w-full divide-y divide-gray-200">
+            <div className="overflow-x-auto rounded-xl -mx-4 sm:mx-0">
+              <table className="min-w-full divide-y divide-gray-200" style={{minWidth: '600px'}}>
                 <thead className="bg-gradient-to-r from-[#3d348b]/10 to-[#7678ed]/10">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       User
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       Date
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       <div className="flex items-center">
                         <FiNavigation className="mr-1 text-[#7678ed]" />
@@ -563,7 +564,7 @@ const AdminDashboard = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       <div className="flex items-center">
                         <FiTarget className="mr-1 text-[#f35b04]" />
@@ -572,7 +573,7 @@ const AdminDashboard = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       <div className="flex items-center">
                         <FiTruck className="mr-1 text-[#f7b801]" />
@@ -581,7 +582,7 @@ const AdminDashboard = () => {
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                     >
                       Cost
                     </th>
@@ -590,38 +591,38 @@ const AdminDashboard = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {dashboardData.recentExpenses.map((expense, index) => (
                     <tr key={expense.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-[#3d348b] flex items-center justify-center text-white">
+                          <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-[#3d348b] flex items-center justify-center text-white text-xs sm:text-sm">
                             {expense.user?.name
                               ? expense.user.name.charAt(0).toUpperCase()
                               : "U"}
                           </div>
-                          <div className="ml-3 font-medium text-gray-900">
+                          <div className="ml-2 sm:ml-3 font-medium text-gray-900 text-sm sm:text-base">
                             {expense.user?.name || "N/A"}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
                         {formatDate(expense.journeyDate, "short")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="px-2 py-1 bg-[#7678ed]/10 rounded-full text-[#3d348b]">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
+                        <span className="px-2 py-1 bg-[#7678ed]/10 rounded-full text-[#3d348b] text-xs sm:text-sm">
                           {expense.startingPoint || "N/A"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="px-2 py-1 bg-[#f35b04]/10 rounded-full text-[#f35b04]">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
+                        <span className="px-2 py-1 bg-[#f35b04]/10 rounded-full text-[#f35b04] text-xs sm:text-sm">
                           {expense.destinationPoint || "N/A"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span className="px-2 py-1 bg-[#f7b801]/10 rounded-full">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
+                        <span className="px-2 py-1 bg-[#f7b801]/10 rounded-full text-xs sm:text-sm">
                           {expense.distance} km
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <span className="px-3 py-1.5 bg-[#f35b04]/10 rounded-full text-[#f35b04] font-bold">
+                      <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                        <span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-[#f35b04]/10 rounded-full text-[#f35b04] font-bold text-xs sm:text-sm">
                           {formatCurrency(expense.totalCost, "CHF")}
                         </span>
                       </td>

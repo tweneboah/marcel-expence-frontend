@@ -247,6 +247,7 @@ const AdminLayout = ({ children }) => {
   const sidebarVariants = {
     open: {
       x: 0,
+      width: isMobile ? "18rem" : "18rem",
       opacity: 1,
       transition: {
         type: "spring",
@@ -256,7 +257,8 @@ const AdminLayout = ({ children }) => {
     },
     closed: {
       x: isMobile ? "-100%" : 0,
-      opacity: isMobile ? 0 : 1,
+      width: isMobile ? "18rem" : "4rem",
+      opacity: 1,
       transition: {
         type: "spring",
         stiffness: 300,
@@ -335,7 +337,7 @@ const AdminLayout = ({ children }) => {
         variants={sidebarVariants}
         initial={false}
         animate={isOpen ? "open" : "closed"}
-        className={`fixed md:relative z-30 h-full w-72 overflow-y-auto shadow-xl`}
+        className={`fixed md:relative z-30 h-full overflow-y-auto shadow-xl ${!isOpen && !isMobile ? 'overflow-hidden' : ''}`}
       >
         <div className="h-full flex flex-col bg-gradient-to-br from-[#3d348b] to-[#7678ed]">
           {/* Sidebar Header */}
@@ -349,7 +351,9 @@ const AdminLayout = ({ children }) => {
               <div className="w-8 h-8 rounded-full bg-[#f7b801] flex items-center justify-center">
                 <FaUser className="text-[#3d348b]" />
               </div>
-              <span className="text-white font-bold text-lg">Admin Panel</span>
+              {(isOpen || isMobile) && (
+                <span className="text-white font-bold text-lg whitespace-nowrap">Admin Panel</span>
+              )}
             </motion.div>
             {isMobile && (
               <motion.button
@@ -382,7 +386,8 @@ const AdminLayout = ({ children }) => {
                       <motion.button
                         whileHover={menuItemVariants.hover}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => toggleSubmenu(item.label.toLowerCase())}
+                        onClick={() => !isOpen && !isMobile ? null : toggleSubmenu(item.label.toLowerCase())}
+                        title={!isOpen && !isMobile ? item.label : ''}
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 ${
                           isActiveMenu(item) ||
                           expandedMenus[item.label.toLowerCase()]
@@ -391,25 +396,29 @@ const AdminLayout = ({ children }) => {
                         }`}
                       >
                         <div className="flex items-center">
-                          <span className="mr-3 text-[#f7b801]">
+                          <span className={`text-[#f7b801] ${!isOpen && !isMobile ? 'mx-auto' : 'mr-3'}`}>
                             {item.icon}
                           </span>
-                          <span className="font-medium">{item.label}</span>
+                          {(isOpen || isMobile) && (
+                            <span className="font-medium whitespace-nowrap">{item.label}</span>
+                          )}
                         </div>
-                        <motion.span
-                          animate={{
-                            rotate: expandedMenus[item.label.toLowerCase()]
-                              ? 180
-                              : 0,
-                          }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <FaAngleDown size={16} className="text-[#f7b801]" />
-                        </motion.span>
+                        {(isOpen || isMobile) && (
+                          <motion.span
+                            animate={{
+                              rotate: expandedMenus[item.label.toLowerCase()]
+                                ? 180
+                                : 0,
+                            }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <FaAngleDown size={16} className="text-[#f7b801]" />
+                          </motion.span>
+                        )}
                       </motion.button>
 
                       <AnimatePresence>
-                        {expandedMenus[item.label.toLowerCase()] && (
+                        {expandedMenus[item.label.toLowerCase()] && (isOpen || isMobile) && (
                           <motion.div
                             variants={subMenuVariants}
                             initial="closed"
@@ -452,14 +461,17 @@ const AdminLayout = ({ children }) => {
                     >
                       <Link
                         to={item.path}
+                        title={!isOpen && !isMobile ? item.label : ''}
                         className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
                           location.pathname === item.path
                             ? "bg-[#f35b04] bg-opacity-30 text-white"
                             : "text-white hover:bg-[#f7b801] hover:bg-opacity-15"
                         }`}
                       >
-                        <span className="mr-3 text-[#f7b801]">{item.icon}</span>
-                        <span className="font-medium">{item.label}</span>
+                        <span className={`text-[#f7b801] ${!isOpen && !isMobile ? 'mx-auto' : 'mr-3'}`}>{item.icon}</span>
+                        {(isOpen || isMobile) && (
+                          <span className="font-medium whitespace-nowrap">{item.label}</span>
+                        )}
                       </Link>
                     </motion.div>
                   )}
@@ -479,20 +491,22 @@ const AdminLayout = ({ children }) => {
               onClick={handleLogout}
               className="flex items-center justify-center w-full px-4 py-2 rounded-lg bg-[#f35b04] text-white transition-all duration-200"
             >
-              <FaSignOutAlt className="mr-2" />
-              <span>Logout</span>
+              <FaSignOutAlt className={!isOpen && !isMobile ? 'mx-auto' : 'mr-2'} />
+              {(isOpen || isMobile) && (
+                <span>Logout</span>
+              )}
             </motion.button>
           </div>
         </div>
       </motion.div>
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${isOpen ? 'md:ml-0' : 'md:ml-16'}`}>
         {/* Header */}
         <header className="bg-white shadow-md">
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between">
-              {/* Mobile Menu Toggle */}
+              {/* Sidebar Toggle Button */}
               <motion.button
                 whileHover={{
                   scale: 1.1,
@@ -501,16 +515,17 @@ const AdminLayout = ({ children }) => {
                 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg bg-[#3d348b] text-white md:hidden focus:outline-none transition-colors duration-200"
+                className="p-2 rounded-lg bg-[#3d348b] text-white focus:outline-none transition-colors duration-200"
+                title={isOpen ? "Close Sidebar" : "Open Sidebar"}
               >
-                <FaBars size={18} />
+                {isOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
               </motion.button>
 
               {/* Page Title */}
               <motion.h1
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-xl font-bold text-[#3d348b] hidden md:block"
+                className="text-xl font-bold text-[#3d348b] flex-1 text-center md:text-left md:flex-none"
               >
                 {menuItems.find(
                   (item) =>
